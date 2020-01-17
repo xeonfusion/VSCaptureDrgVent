@@ -1,0 +1,5 @@
+/Users/krishna/cnt/dragertest/v3/VSCaptureDrgVent/VSCaptureDrgVent/bin/Debug/VSCaptureDrgVent.exe
+/Users/krishna/cnt/dragertest/v3/VSCaptureDrgVent/VSCaptureDrgVent/bin/Debug/VSCaptureDrgVent.pdb
+/Users/krishna/cnt/dragertest/v3/VSCaptureDrgVent/VSCaptureDrgVent/obj/x86/Debug/VSCaptureDrgVent.csproj.CoreCompileInputs.cache
+/Users/krishna/cnt/dragertest/v3/VSCaptureDrgVent/VSCaptureDrgVent/obj/x86/Debug/VSCaptureDrgVent.exe
+/Users/krishna/cnt/dragertest/v3/VSCaptureDrgVent/VSCaptureDrgVent/obj/x86/Debug/VSCaptureDrgVent.pdb
