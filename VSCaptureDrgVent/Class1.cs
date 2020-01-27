@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -153,7 +153,8 @@ namespace VSCaptureDrgVent
             DPort.DataBits = 8;
             DPort.StopBits = StopBits.One;
 
-            DPort.Handshake = Handshake.None;
+            //DPort.Handshake = Handshake.None;
+            DPort.Handshake = Handshake.XOnXOff;
             DPort.RtsEnable = true;
             DPort.DtrEnable = true;
 
@@ -898,8 +899,8 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x010":
                     //NOP
-                    //byte[] nopresponse = { 0x30 };
-                    //CommandEchoResponse(nopresponse);
+                    byte[] nopresponse = { 0x30 };
+                    CommandEchoResponse(nopresponse);
                     break;
                 default:
                     break;
