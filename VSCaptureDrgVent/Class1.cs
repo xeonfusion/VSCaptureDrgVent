@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -835,7 +835,7 @@ namespace VSCaptureDrgVent
                 case "\x1bQ":
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
-                    WaitForMilliSeconds(100);
+                    WaitForMilliSeconds(200);
                     RequestDevID();
                     break;
                 case "\x01Q":
@@ -850,13 +850,13 @@ namespace VSCaptureDrgVent
                 case "\x01R":
                     //Device id response
                     RequestRealtimeDataConfiguration();
-                    WaitForMilliSeconds(100);
+                    WaitForMilliSeconds(200);
                     RequestMeasuredDataCP1();
-                    WaitForMilliSeconds(100);
+                    WaitForMilliSeconds(200);
                     RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(100);
+                    WaitForMilliSeconds(200);
                     RequestDeviceSettings();
-                    WaitForMilliSeconds(100);
+                    WaitForMilliSeconds(200);
                     RequestTextMessages();
                     break;
                 case "\x01S":

@@ -117,13 +117,13 @@ namespace VSCaptureDrgVent
                 //_serialPort.RequestDevID();
                 
                 Task.Run(() => _serialPort.SendCycledPollDataRequestCP1(nInterval));
-                WaitForMilliSeconds(100);
+                WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollDataRequestCP2(nInterval));
-                WaitForMilliSeconds(100);
+                WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollDeviceSettings(nInterval));
-                WaitForMilliSeconds(100);
+                WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollTextMessages(nInterval));
-                WaitForMilliSeconds(100);
+                WaitForMilliSeconds(200);
 
 
                 //RequestRealtimeData after DevID response
