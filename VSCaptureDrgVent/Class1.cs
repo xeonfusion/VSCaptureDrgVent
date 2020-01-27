@@ -835,8 +835,8 @@ namespace VSCaptureDrgVent
                 case "\x1bQ":
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
-                    //WaitForMilliSeconds(50);
-                    //RequestDevID();
+                    WaitForMilliSeconds(100);
+                    RequestDevID();
                     break;
                 case "\x01Q":
                     byte[] iccresponse = { 0x51 };
@@ -849,15 +849,15 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x01R":
                     //Device id response
-                    RequestMeasuredDataCP1();
-                    WaitForMilliSeconds(50);
-                    RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(50);
-                    RequestDeviceSettings();
-                    WaitForMilliSeconds(50);
-                    RequestTextMessages();
-                    WaitForMilliSeconds(50);
                     RequestRealtimeDataConfiguration();
+                    WaitForMilliSeconds(100);
+                    RequestMeasuredDataCP1();
+                    WaitForMilliSeconds(100);
+                    RequestMeasuredDataCP2();
+                    WaitForMilliSeconds(100);
+                    RequestDeviceSettings();
+                    WaitForMilliSeconds(100);
+                    RequestTextMessages();
                     break;
                 case "\x01S":
                     //Request realtime config respone
@@ -898,6 +898,8 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x010":
                     //NOP
+                    //byte[] nopresponse = { 0x30 };
+                    //CommandEchoResponse(nopresponse);
                     break;
                 default:
                     break;
