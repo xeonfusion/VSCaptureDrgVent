@@ -902,6 +902,11 @@ namespace VSCaptureDrgVent
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
+                case "\x1b0":
+                    //NOP
+                    byte[] nopresponse2 = { 0x30 };
+                    CommandEchoResponse(nopresponse2);
+                    break;
                 default:
                     break;
             }
