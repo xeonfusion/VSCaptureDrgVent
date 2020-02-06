@@ -207,6 +207,25 @@ namespace VSCaptureDrgVent
             DPort.WriteBuffer(DataConstants.poll_request_real_time_data_config);
         }
 
+        public void SendDeviceID()
+        {
+            List<byte> temptxbufflist = new List<byte>();
+            byte[] deviceidcommandresponse = { 0x52 };
+            byte[] DevID = Encoding.ASCII.GetBytes("0161");
+            byte[] DevName = Encoding.ASCII.GetBytes("'VSCaptureDrgVent'");
+            byte[] DevRevision = Encoding.ASCII.GetBytes("01.03");
+            byte[] MedibusVer = Encoding.ASCII.GetBytes(":06.00");
+
+            temptxbufflist.AddRange(deviceidcommandresponse);
+            temptxbufflist.AddRange(DevID);
+            temptxbufflist.AddRange(DevName);
+            temptxbufflist.AddRange(DevRevision);
+            temptxbufflist.AddRange(MedibusVer);
+
+            CommandEchoResponse(temptxbufflist.ToArray());
+
+        }
+
         public void ReadRealtimeConfigResponse(byte[] packetdata)
         {
             //Store configuration values
@@ -628,6 +647,23 @@ namespace VSCaptureDrgVent
             return strbuildwavevalues;
         }
 
+        public async Task SendCycledICCRequest(int nInterval)
+        {
+            int nmillisecond = nInterval * 1000;
+            if (nmillisecond != 0)
+            {
+                do
+                {
+                    RequestICC();
+                    await Task.Delay(nmillisecond);
+
+                }
+                while (true);
+            }
+            RequestICC();
+
+        }
+
         public async Task SendCycledPollDataRequestCP1(int nInterval)
         {
             int nmillisecond = nInterval * 1000;
@@ -844,9 +880,10 @@ namespace VSCaptureDrgVent
                     RequestDevID();
                     break;
                 case "\x1bR":
-                    //Send empty device id response
+                    //Send empty or complete device id response
                     byte[] deviceidcommandresponse = { 0x52 };
-                    CommandEchoResponse(deviceidcommandresponse);
+                    //CommandEchoResponse(deviceidcommandresponse);
+                    SendDeviceID();
                     break;
                 case "\x01R":
                     //Device id response
@@ -855,7 +892,7 @@ namespace VSCaptureDrgVent
                     RequestMeasuredDataCP1();
                     WaitForMilliSeconds(200);
                     RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(200);
+                    WaitForMilliSeconds(200); 
                     RequestDeviceSettings();
                     WaitForMilliSeconds(200);
                     RequestTextMessages();
