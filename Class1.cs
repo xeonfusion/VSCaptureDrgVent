@@ -76,6 +76,7 @@ namespace VSCaptureDrgVent
         public StringBuilder m_strbuildwavevalues = new StringBuilder();
         public long m_RealtiveTimeCounter =0;
         public int m_nWaveformSet=0;
+        public bool m_realtimestart = false;
 
         public class NumericValResult
         {
@@ -881,18 +882,22 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x1bR":
                     //Send empty or complete device id response
-                    byte[] deviceidcommandresponse = { 0x52 };
+                    //byte[] deviceidcommandresponse = { 0x52 };
                     //CommandEchoResponse(deviceidcommandresponse);
                     SendDeviceID();
                     break;
                 case "\x01R":
                     //Device id response
-                    RequestRealtimeDataConfiguration();
-                    WaitForMilliSeconds(200);
+                    if(m_realtimestart == false)
+                    {
+                        RequestRealtimeDataConfiguration();
+                        m_realtimestart = true;
+                        WaitForMilliSeconds(200);
+                    }
                     RequestMeasuredDataCP1();
                     WaitForMilliSeconds(200);
                     RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(200); 
+                    WaitForMilliSeconds(200);
                     RequestDeviceSettings();
                     WaitForMilliSeconds(200);
                     RequestTextMessages();
@@ -919,6 +924,7 @@ namespace VSCaptureDrgVent
                         DisableDataStream5to8();
                         DisableDataStream9to12();
                     }
+                    m_realtimestart = false;
                     break;
                 case "\x01$":
                     //Data response cp1
