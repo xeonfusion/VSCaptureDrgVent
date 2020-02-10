@@ -154,8 +154,8 @@ namespace VSCaptureDrgVent
             DPort.DataBits = 8;
             DPort.StopBits = StopBits.One;
 
-            //DPort.Handshake = Handshake.None;
-            DPort.Handshake = Handshake.XOnXOff;
+            DPort.Handshake = Handshake.None;
+            //DPort.Handshake = Handshake.XOnXOff;
             DPort.RtsEnable = true;
             DPort.DtrEnable = true;
 
@@ -825,6 +825,8 @@ namespace VSCaptureDrgVent
 
                 if (DPort.BytesToRead == 0)
                 {
+                    ParseRealtimeDataResponse();
+
                     if (FrameList.Count > 0)
                     {
                         ReadPacketFromFrame();
@@ -833,7 +835,7 @@ namespace VSCaptureDrgVent
 
                     }
 
-                    ParseRealtimeDataResponse();
+                    //ParseRealtimeDataResponse();
 
                 }
 
@@ -878,7 +880,14 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x01Q":
                     byte[] iccresponse = { 0x51 };
-                    RequestDevID();
+                    //RequestDevID();
+                    if (m_realtimestart == false)
+                    {
+                        RequestRealtimeDataConfiguration();
+                        m_realtimestart = true;
+                        WaitForMilliSeconds(200);
+                    }
+                    RequestMeasuredDataCP1();
                     break;
                 case "\x1bR":
                     //Send empty or complete device id response
@@ -888,7 +897,7 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x01R":
                     //Device id response
-                    if(m_realtimestart == false)
+                    /*if(m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
                         m_realtimestart = true;
@@ -900,7 +909,7 @@ namespace VSCaptureDrgVent
                     WaitForMilliSeconds(200);
                     RequestDeviceSettings();
                     WaitForMilliSeconds(200);
-                    RequestTextMessages();
+                    RequestTextMessages();*/
                     break;
                 case "\x01S":
                     //Request realtime config respone
@@ -929,13 +938,16 @@ namespace VSCaptureDrgVent
                 case "\x01$":
                     //Data response cp1
                     ParseDataResponseMeasuredCP1(packetbuffer);
+                    RequestMeasuredDataCP2();
                     break;
                 case "\x01+":
                     //Data response cp2
                     ParseDataResponseMeasuredCP2(packetbuffer);
+                    RequestDeviceSettings();
                     break;
                 case "\x01)":
                     ParseDataDeviceSettings(packetbuffer);
+                    RequestTextMessages();
                     break;
                 case "\x01*":
                     ParseDataTextMessages(packetbuffer);
