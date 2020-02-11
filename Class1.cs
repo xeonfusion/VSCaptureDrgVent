@@ -957,8 +957,22 @@ namespace VSCaptureDrgVent
                     byte[] nopresponse2 = { 0x30 };
                     CommandEchoResponse(nopresponse2);
                     break;
-                default: // Unknown command
 
+                default: // Unknown message
+                    switch (responsetype.Substring(0,1))
+                    { 
+                        case "\x01": // Unknown Response
+                            break;
+                        case "\xb1": // Unknown Command
+                            // Respond to unknown command by echoing command
+                            byte[] echoreponse = Convert.FromBase64String(responsetype.Substring(1, 1));
+                            CommandEchoResponse(echoreponse);
+                            break;
+                        default:
+                            Console.WriteLine("Warning: Received unknown signal from device: " + responsetype);
+                            Console.WriteLine();
+                            break;
+                    }
                     break;
             }
 
