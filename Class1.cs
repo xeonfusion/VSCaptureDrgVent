@@ -1006,7 +1006,7 @@ namespace VSCaptureDrgVent
                             CommandEchoResponse(echoreponse);
                             break;
                         default:
-                            DebugLine("Received: Unknown message");
+                            DebugLine("Received: Unknown message" + BitConverter.ToString(packetbuffer));
 
                             Console.WriteLine("Warning: Received unknown signal (neither response or command) from device: "
                                 + BitConverter.ToString(packetbuffer));
