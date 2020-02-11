@@ -872,13 +872,13 @@ namespace VSCaptureDrgVent
 
             switch (responsetype)
             {
-                case "\x1bQ":
+                case "\x1bQ": // ICC request
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
                     WaitForMilliSeconds(200);
                     RequestDevID();
                     break;
-                case "\x01Q":
+                case "\x01Q": // ICC response
                     byte[] iccresponse = { 0x51 };
                     //RequestDevID();
                     if (m_realtimestart == false)
@@ -889,14 +889,14 @@ namespace VSCaptureDrgVent
                     }
                     RequestMeasuredDataCP1();
                     break;
-                case "\x1bR":
+                case "\x1bR": // Device ID request
                     //Send empty or complete device id response
                     //byte[] deviceidcommandresponse = { 0x52 };
                     //CommandEchoResponse(deviceidcommandresponse);
                     SendDeviceID();
                     break;
-                case "\x01R":
-                    //Device id response
+                case "\x01R": //Device id response
+
                     /*if(m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
@@ -911,13 +911,12 @@ namespace VSCaptureDrgVent
                     WaitForMilliSeconds(200);
                     RequestTextMessages();*/
                     break;
-                case "\x01S":
-                    //Request realtime config respone
+                case "\x01S": // Realtime Config Response
                     ReadRealtimeConfigResponse(packetbuffer);
                     ConfigureRealtimeTransmission();
                     break;
-                case "\x01T":
-                    //Realtime configuration transmission response
+                case "\x01T": //Realtime configuration transmission response
+
                     EnableDataStream1to4();
                     if(m_nWaveformSet ==4)
                     {
@@ -925,8 +924,7 @@ namespace VSCaptureDrgVent
                         EnableDataStream9to12();
                     }
                     break;
-                case "\x1bV":
-                    //Realtime configuration changed response
+                case "\x1bV": //Realtime configuration changed (command)
                     DisableDataStream1to4();
                     if (m_nWaveformSet == 4)
                     {
@@ -935,34 +933,32 @@ namespace VSCaptureDrgVent
                     }
                     m_realtimestart = false;
                     break;
-                case "\x01$":
-                    //Data response cp1
+                case "\x01$": //Data response cp1
                     ParseDataResponseMeasuredCP1(packetbuffer);
                     RequestMeasuredDataCP2();
                     break;
-                case "\x01+":
-                    //Data response cp2
+                case "\x01+": //Data response cp2
                     ParseDataResponseMeasuredCP2(packetbuffer);
                     RequestDeviceSettings();
                     break;
-                case "\x01)":
+                case "\x01)": //Data response device settings
                     ParseDataDeviceSettings(packetbuffer);
                     RequestTextMessages();
                     break;
-                case "\x01*":
+                case "\x01*": //Data response text messages
                     ParseDataTextMessages(packetbuffer);
                     break;
-                case "\x010":
-                    //NOP
+                case "\x010": //NOP Response
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
-                case "\x1b0":
+                case "\x1b0": //NOP request
                     //NOP
                     byte[] nopresponse2 = { 0x30 };
                     CommandEchoResponse(nopresponse2);
                     break;
-                default:
+                default: // Unknown command
+
                     break;
             }
 
