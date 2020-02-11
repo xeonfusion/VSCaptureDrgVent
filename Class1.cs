@@ -172,41 +172,49 @@ namespace VSCaptureDrgVent
         public void RequestICC()
         {
             DPort.WriteBuffer(DataConstants.poll_request_icc_msg);
+            DebugLine("Send: Request ICC");
         }
 
         public void RequestDevID()
         {
             DPort.WriteBuffer(DataConstants.poll_request_deviceid);
+            DebugLine("Send: Request DevID");
         }
 
 		public void RequestMeasuredDataCP1()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
-		}
+            DebugLine("Send: Request Data CP1");
+        }
 
         public void RequestMeasuredDataCP2()
         {
             DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage2);
+            DebugLine("Send: Request Data CP2");
         }
 
-		public void RequestDeviceSettings()
+        public void RequestDeviceSettings()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_device_settings);
-		}
+            DebugLine("Send: Request Data Dev settings");
+        }
 
-		public void RequestTextMessages()
+        public void RequestTextMessages()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_text_messages);
-		}
+            DebugLine("Send: Request Data TextMsgs");
+        }
 
         public void RequestStopCommunication()
         {
             DPort.WriteBuffer(DataConstants.poll_request_stop_com);
+            DebugLine("Send: Request Stop Communication");
         }
 
         public void RequestRealtimeDataConfiguration()
         {
             DPort.WriteBuffer(DataConstants.poll_request_real_time_data_config);
+            DebugLine("Send: Request Realtime Config");
         }
 
         public void SendDeviceID()
@@ -225,6 +233,7 @@ namespace VSCaptureDrgVent
             temptxbufflist.AddRange(MedibusVer);
 
             CommandEchoResponse(temptxbufflist.ToArray());
+            DebugLine("Send: Device ID (response)");
 
         }
 
@@ -321,6 +330,8 @@ namespace VSCaptureDrgVent
             }
 
             DPort.WriteBuffer(temptxbufflist.ToArray());
+            DebugLine("Send: Configure realtime transmission (command)");
+
         }
 
         public void EnableDataStream1to4()
@@ -340,6 +351,7 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 1to4");
         }
 
         public void EnableDataStream5to8()
@@ -359,6 +371,8 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 5to8");
+
         }
 
         public void EnableDataStream9to12()
@@ -378,6 +392,8 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 9to12");
+
         }
 
         public void DisableDataStream1to4()
