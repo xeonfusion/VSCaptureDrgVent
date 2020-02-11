@@ -83,7 +83,7 @@ namespace VSCaptureDrgVent
             short nWaveformSet = 0;
             if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
 
-            Console.WriteLine("You may now connect the serial cable to the Draeger Ventilator");
+            Console.WriteLine("\nYou may now connect the serial cable to the Draeger Ventilator");
             Console.WriteLine("Press any key to continue..");
 
             Console.ReadKey(true);
@@ -104,21 +104,20 @@ namespace VSCaptureDrgVent
                 }
 
                 Console.WriteLine();
-                //Console.WriteLine("Requesting Transmission from monitor");
                 Console.WriteLine("Requesting Transmission set {0} from monitor", nIntervalset);
 
 
                 Console.WriteLine();
                 Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in same folder");
 
-                //_serialPort.RequestICC();
+                _serialPort.RequestICC();
                 //_serialPort.RequestDevID();
 
-                Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
+                //Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
                 WaitForMilliSeconds(200);
 
-                /*Task.Run(() => _serialPort.SendCycledPollDataRequestCP1(nInterval));
-                WaitForMilliSeconds(200);
+                Task.Run(() => _serialPort.SendCycledPollDataRequestCP1(nInterval));
+                /*WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollDataRequestCP2(nInterval));
                 WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollDeviceSettings(nInterval));
@@ -128,7 +127,7 @@ namespace VSCaptureDrgVent
 
 
                 //RequestRealtimeData after DevID response
-                //_serialPort.RequestRealtimeDataConfiguration();
+                _serialPort.RequestRealtimeDataConfiguration();
 
                 Task.Run(() => _serialPort.KeepConnectionAlive(2));
 

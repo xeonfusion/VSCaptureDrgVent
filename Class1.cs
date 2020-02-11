@@ -78,6 +78,7 @@ namespace VSCaptureDrgVent
         public long m_RealtiveTimeCounter =0;
         public int m_nWaveformSet=0;
         public bool m_realtimestart = false;
+        public bool m_MEDIBUSstart = false;
 
         public class NumericValResult
         {
@@ -689,8 +690,11 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    RequestMeasuredDataCP1();
                     await Task.Delay(nmillisecond);
+                    if (m_MEDIBUSstart == true)
+                    {
+                        RequestMeasuredDataCP1();
+                    }
 
                 }
                 while (true);
@@ -756,6 +760,7 @@ namespace VSCaptureDrgVent
                 do
                 {
                     DPort.WriteBuffer(DataConstants.poll_request_no_operation);
+                    DebugLine("Send: NOP");
                     await Task.Delay(nmillisecond);
 
                 }
@@ -895,31 +900,26 @@ namespace VSCaptureDrgVent
                     // Respond to ICC request with ICC echo
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
+                    RequestDevID();
                     break;
 
                 case "\x01Q": // ICC response
                     DebugLine("Received: ICC response");
-                    
+
+                    m_MEDIBUSstart = true;
                     RequestDevID();
-                    if (m_realtimestart == false)
-                    {
-                        WaitForMilliSeconds(200);
-                        RequestRealtimeDataConfiguration();
-                        m_realtimestart = true;
-                        WaitForMilliSeconds(200);
-                    }
-                    RequestMeasuredDataCP1();
                     break;
 
                 case "\x1bR": // Device ID request
                     DebugLine("Received: Device ID request");
 
                     SendDeviceID();
+                    m_MEDIBUSstart = true;
                     break;
 
                 case "\x01R": //Device id response
                     DebugLine("Received: Device ID response");
-
+                    m_MEDIBUSstart = true;
                     break;
 
                 case "\x01S": // Realtime Config Response
@@ -949,6 +949,9 @@ namespace VSCaptureDrgVent
                         DisableDataStream9to12();
                     }
                     m_realtimestart = false;
+
+                    // Configure realtime transmission to reenable realtime data
+                    ConfigureRealtimeTransmission();
                     break;
                 case "\x01$": //Data response cp1
                     DebugLine("Received: Data CP1 response");
