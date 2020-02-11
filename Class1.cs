@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -875,17 +875,17 @@ namespace VSCaptureDrgVent
             {
                 case "\x1bQ": // ICC request
                     Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: ICC request");
+                    // Respond to ICC request with ICC echo
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
-                    WaitForMilliSeconds(200);
-                    RequestDevID();
                     break;
                 case "\x01Q": // ICC response
                     Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: ICC response");
-                    byte[] iccresponse = { 0x51 };
-                    //RequestDevID();
+                    
+                    RequestDevID();
                     if (m_realtimestart == false)
                     {
+                        WaitForMilliSeconds(200);
                         RequestRealtimeDataConfiguration();
                         m_realtimestart = true;
                         WaitForMilliSeconds(200);
@@ -895,27 +895,11 @@ namespace VSCaptureDrgVent
                 case "\x1bR": // Device ID request
                     Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Device ID request");
 
-                    //Send empty or complete device id response
-                    //byte[] deviceidcommandresponse = { 0x52 };
-                    //CommandEchoResponse(deviceidcommandresponse);
                     SendDeviceID();
                     break;
                 case "\x01R": //Device id response
                     Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Device ID response");
 
-                    /*if(m_realtimestart == false)
-                    {
-                        RequestRealtimeDataConfiguration();
-                        m_realtimestart = true;
-                        WaitForMilliSeconds(200);
-                    }
-                    RequestMeasuredDataCP1();
-                    WaitForMilliSeconds(200);
-                    RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(200);
-                    RequestDeviceSettings();
-                    WaitForMilliSeconds(200);
-                    RequestTextMessages();*/
                     break;
                 case "\x01S": // Realtime Config Response
                     Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Realtime Config Response");
