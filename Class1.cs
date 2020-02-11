@@ -683,20 +683,21 @@ namespace VSCaptureDrgVent
 
         }
 
-        public async Task SendCycledPollDataRequestCP1(int nInterval)
+        public async Task SendCycledRequests(int nInterval)
         {
             int nmillisecond = nInterval * 1000;
             if (nmillisecond != 0)
             {
                 do
                 {
-                    for (int i = 0; i < 10*60; i++)
+                    for (int i = 0; i < 10*60; i++) // count seconds up to 10 min, and restart
                     {
                         await Task.Delay(1000);
                         if (m_MEDIBUSstart == true && i % nInterval == -1) // -1: do not request slow data
                         {
                             RequestMeasuredDataCP1();
-                        } else if (i % 2 == 0)
+                        } 
+                        else if (i % 2 == 0) // Send NOP request every other second if no other request is send
                         {
                             DPort.WriteBuffer(DataConstants.poll_request_no_operation);
                             DebugLine("Send: NOP");
