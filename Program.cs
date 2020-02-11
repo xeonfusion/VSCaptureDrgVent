@@ -129,7 +129,7 @@ namespace VSCaptureDrgVent
                 //RequestRealtimeData after DevID response
                 _serialPort.RequestRealtimeDataConfiguration();
 
-                Task.Run(() => _serialPort.KeepConnectionAlive(2));
+                //Task.Run(() => _serialPort.KeepConnectionAlive(2));
 
                 Console.WriteLine("Press Escape button to Stop");
 

@@ -690,11 +690,19 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    await Task.Delay(nmillisecond);
-                    if (m_MEDIBUSstart == true)
+                    for (int i = 0; i < 10*60; i++)
                     {
-                        RequestMeasuredDataCP1();
+                        await Task.Delay(1000);
+                        if (m_MEDIBUSstart == true && i % nInterval == -1) // -1: do not request slow data
+                        {
+                            RequestMeasuredDataCP1();
+                        } else if (i % 2 == 0)
+                        {
+                            DPort.WriteBuffer(DataConstants.poll_request_no_operation);
+                            DebugLine("Send: NOP");
+                        }
                     }
+                    
 
                 }
                 while (true);
@@ -976,13 +984,13 @@ namespace VSCaptureDrgVent
 
                     ParseDataTextMessages(packetbuffer);
                     break;
-                case "\x010": //NOP Response
+                case "\x01\x30": //NOP Response
                     DebugLine("Received: NOP response");
 
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
-                case "\x1b0": //NOP request
+                case "\x1b\x30": //NOP request
                     DebugLine("Received: NOP request");
 
                     byte[] nopresponse2 = { 0x30 };
