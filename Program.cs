@@ -83,6 +83,10 @@ namespace VSCaptureDrgVent
             short nWaveformSet = 0;
             if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
 
+            Console.WriteLine("You may now connect the serial cable to the Draeger Ventilator");
+            Console.WriteLine("Press any key to continue..");
+
+            Console.ReadKey(true);
 
             try
             {
@@ -98,12 +102,6 @@ namespace VSCaptureDrgVent
                 {
                     _serialPort.DataReceived += new SerialDataReceivedEventHandler(p_DataReceived);
                 }
-
-                Console.WriteLine("You may now connect the serial cable to the Draeger Ventilator");
-                Console.WriteLine("Press any key to continue..");
-
-                Console.ReadKey(true);
-
 
                 Console.WriteLine();
                 //Console.WriteLine("Requesting Transmission from monitor");
