@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -874,13 +874,15 @@ namespace VSCaptureDrgVent
             switch (responsetype)
             {
                 case "\x1bQ": // ICC request
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: ICC request");
+                    DebugLine("Received: ICC request");
+                    
                     // Respond to ICC request with ICC echo
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
                     break;
+
                 case "\x01Q": // ICC response
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: ICC response");
+                    DebugLine("Received: ICC response");
                     
                     RequestDevID();
                     if (m_realtimestart == false)
@@ -892,23 +894,27 @@ namespace VSCaptureDrgVent
                     }
                     RequestMeasuredDataCP1();
                     break;
+
                 case "\x1bR": // Device ID request
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Device ID request");
+                    DebugLine("Received: Device ID request");
 
                     SendDeviceID();
                     break;
+
                 case "\x01R": //Device id response
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Device ID response");
+                    DebugLine("Received: Device ID response");
 
                     break;
+
                 case "\x01S": // Realtime Config Response
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Realtime Config Response");
+                    DebugLine("Received: Realtime Config Response");
 
                     ReadRealtimeConfigResponse(packetbuffer);
                     ConfigureRealtimeTransmission();
                     break;
+
                 case "\x01T": //Realtime configuration transmission response
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Realtime Config Transmission response");
+                    DebugLine("Received: Realtime Config Transmission response");
 
                     EnableDataStream1to4();
                     if(m_nWaveformSet ==4)
@@ -918,7 +924,7 @@ namespace VSCaptureDrgVent
                     }
                     break;
                 case "\x1bV": //Realtime configuration changed (command)
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Realtime config changed (command)");
+                    DebugLine("Received: Realtime config changed (command)");
 
                     DisableDataStream1to4();
                     if (m_nWaveformSet == 4)
@@ -929,36 +935,36 @@ namespace VSCaptureDrgVent
                     m_realtimestart = false;
                     break;
                 case "\x01$": //Data response cp1
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Data CP1 response");
+                    DebugLine("Received: Data CP1 response");
                     
                     ParseDataResponseMeasuredCP1(packetbuffer);
                     RequestMeasuredDataCP2();
                     break;
                 case "\x01+": //Data response cp2
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Data CP2 response");
+                    DebugLine("Received: Data CP2 response");
 
                     ParseDataResponseMeasuredCP2(packetbuffer);
                     RequestDeviceSettings();
                     break;
                 case "\x01)": //Data response device settings
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Data device settings response");
+                    DebugLine("Received: Data device settings response");
 
                     ParseDataDeviceSettings(packetbuffer);
                     RequestTextMessages();
                     break;
                 case "\x01*": //Data response text messages
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Data text messages response");
+                    DebugLine("Received: Data text messages response");
 
                     ParseDataTextMessages(packetbuffer);
                     break;
                 case "\x010": //NOP Response
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: NOP response");
+                    DebugLine("Received: NOP response");
 
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
                 case "\x1b0": //NOP request
-                    Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: NOP request");
+                    DebugLine("Received: NOP request");
 
                     byte[] nopresponse2 = { 0x30 };
                     CommandEchoResponse(nopresponse2);
@@ -969,19 +975,19 @@ namespace VSCaptureDrgVent
                     { 
                         case "\x01": // Unknown Response
                             
-                            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Unknown response: " + 
+                            DebugLine("Received: Unknown response: " + 
                                 BitConverter.ToString(packetbuffer));
 
                             break;
                         case "\xb1": // Unknown Command
-                            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Unknown command" + BitConverter.ToString(packetbuffer));
+                            DebugLine("Received: Unknown command" + BitConverter.ToString(packetbuffer));
 
                             // Respond to unknown command by echoing command
                             byte[] echoreponse = Convert.FromBase64String(responsetype.Substring(1, 1));
                             CommandEchoResponse(echoreponse);
                             break;
                         default:
-                            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - Received: Unknown message");
+                            DebugLine("Received: Unknown message");
 
                             Console.WriteLine("Warning: Received unknown signal (neither response or command) from device: "
                                 + BitConverter.ToString(packetbuffer));
@@ -991,6 +997,11 @@ namespace VSCaptureDrgVent
                     break;
             }
 
+        }
+
+        public void DebugLine(string msg)
+        {
+            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - " + msg);
         }
 
         public void CommandEchoResponse(byte[] commandbuffer)
