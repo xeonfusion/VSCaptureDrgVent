@@ -1273,12 +1273,13 @@ namespace VSCaptureDrgVent
                     m_storeend = true;
                     break;
                 default:
+                    // Other bytes should be added to either the realtime-byte list or the bList to be parsed.
                     if((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
                     {
                         //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
                         m_RealTimeByteList.Add(bvalue);
                     }
-                    if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
+                    else if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
                     break;
             }
 
