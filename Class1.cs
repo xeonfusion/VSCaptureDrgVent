@@ -54,9 +54,11 @@ namespace VSCaptureDrgVent
         private int DPortBufSize;
         public byte[] DPort_rxbuf;
         public List<byte[]> FrameList = new List<byte[]>();
-        private bool m_storestart1 = false;
-        private bool m_storestart2 = false;
+        private bool m_storestartResp = false;
+        private bool m_storestartCom = false;
         private bool m_storeend = false;
+        private List<byte> m_bRespList = new List<byte>();
+        private List<byte> m_bComList = new List<byte>();
         private List<byte> m_bList = new List<byte>();
 
         public List<NumericValResult> m_NumericValList = new List<NumericValResult>();
@@ -1269,28 +1271,39 @@ namespace VSCaptureDrgVent
             switch (bvalue)
             {
                 case DataConstants.BOFRESPCHAR:
-                    m_storestart1 = true;
+                    m_storestartResp = true;
                     m_storeend = false;
-                    m_bList.Add(bvalue);
+                    m_bRespList.Add(bvalue);
                     break;
                 case DataConstants.BOFCOMCHAR:
-                    m_storestart2 = true;
+                    m_storestartCom = true;
                     m_storeend = false;
-                    m_bList.Add(bvalue);
+                    m_bComList.Add(bvalue);
                     break;
                 case DataConstants.EOFCHAR:
-                    m_storestart1 = false;
-                    m_storestart2 = false;
+                    // If both m_storestartResp and m_storestartCom are true, the Command (com) is embedded.
+                    // In this case EOF refers to Com.
+                    if (m_storestartCom == true)
+                    {
+                        m_bList = m_bComList;
+                        m_storestartCom = false;
+                    }
+                    else if (m_storestartResp == true)
+                    {
+                        m_bList = m_bRespList;
+                        m_storestartResp = false;
+                    }
                     m_storeend = true;
                     break;
                 default:
-                    // Other bytes should be added to either the realtime-byte list or the bList to be parsed.
+                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed.
                     if((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
                     {
                         //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
                         m_RealTimeByteList.Add(bvalue);
                     }
-                    else if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
+                    else if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
+                    else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
                     break;
             }
 
