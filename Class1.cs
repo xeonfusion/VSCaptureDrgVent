@@ -1278,7 +1278,7 @@ namespace VSCaptureDrgVent
                         //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
                         m_RealTimeByteList.Add(bvalue);
                     }
-                    if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
+                    else if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
                     break;
             }
 
