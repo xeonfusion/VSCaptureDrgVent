@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -333,6 +333,26 @@ namespace VSCaptureDrgVent
             DPort.WriteBuffer(temptxbufflist.ToArray());
             DebugLine("Send: Configure realtime transmission (command)");
 
+        }
+
+        public void EnableDataStreams()
+        {
+            EnableDataStream1to4();
+            if (m_nWaveformSet == 4)
+            {
+                EnableDataStream5to8();
+                EnableDataStream9to12();
+            }
+        }
+
+        public void DisableDataStreams()
+        {
+            DisableDataStream1to4();
+            if (m_nWaveformSet == 4)
+            {
+                DisableDataStream5to8();
+                DisableDataStream9to12();
+            }
         }
 
         public void EnableDataStream1to4()
@@ -941,22 +961,13 @@ namespace VSCaptureDrgVent
                 case "\x01T": //Realtime configuration transmission response
                     DebugLine("Received: Realtime Config Transmission response");
 
-                    EnableDataStream1to4();
-                    if(m_nWaveformSet ==4)
-                    {
-                        EnableDataStream5to8();
-                        EnableDataStream9to12();
-                    }
+                    EnableDataStreams();
+
                     break;
                 case "\x1bV": //Realtime configuration changed (command)
                     DebugLine("Received: Realtime config changed (command)");
 
-                    DisableDataStream1to4();
-                    if (m_nWaveformSet == 4)
-                    {
-                        DisableDataStream5to8();
-                        DisableDataStream9to12();
-                    }
+                    DisableDataStreams();
                     m_realtimestart = false;
 
                     // Configure realtime transmission to reenable realtime data
