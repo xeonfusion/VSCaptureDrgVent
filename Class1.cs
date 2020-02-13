@@ -1318,6 +1318,7 @@ namespace VSCaptureDrgVent
                     else
                     {
                         Console.WriteLine("Checksum Error");
+                        DebugLine("Checksum Error");
                         NAKResponse();
                     }
 
