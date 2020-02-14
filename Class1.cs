@@ -27,6 +27,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace VSCaptureDrgVent
 {
@@ -53,10 +54,12 @@ namespace VSCaptureDrgVent
         private int DPortBufSize;
         public byte[] DPort_rxbuf;
         public List<byte[]> FrameList = new List<byte[]>();
-        private bool m_storestart1 = false;
-        private bool m_storestart2 = false;
+        private bool m_storestartResp = false;
+        private bool m_storestartCom = false;
         private bool m_storeend = false;
         private List<byte> m_bList = new List<byte>();
+        private List<byte> m_bRespList = new List<byte>();
+        private List<byte> m_bComList = new List<byte>();
 
         public List<NumericValResult> m_NumericValList = new List<NumericValResult>();
         public List<string> m_NumValHeaders = new List<string>();
@@ -77,6 +80,8 @@ namespace VSCaptureDrgVent
         public long m_RealtiveTimeCounter =0;
         public int m_nWaveformSet=0;
         public bool m_realtimestart = false;
+        public bool m_MEDIBUSstart = false;
+
 
         public class NumericValResult
         {
@@ -171,41 +176,56 @@ namespace VSCaptureDrgVent
         public void RequestICC()
         {
             DPort.WriteBuffer(DataConstants.poll_request_icc_msg);
+            DebugLine("Send: Request ICC");
         }
 
         public void RequestDevID()
         {
             DPort.WriteBuffer(DataConstants.poll_request_deviceid);
+            DebugLine("Send: Request DevID");
         }
 
 		public void RequestMeasuredDataCP1()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
-		}
+            DebugLine("Send: Request Data CP1");
+        }
 
         public void RequestMeasuredDataCP2()
         {
             DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage2);
+            DebugLine("Send: Request Data CP2");
         }
 
 		public void RequestDeviceSettings()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_device_settings);
-		}
+            DebugLine("Send: Request Data Dev settings");
+        }
 
 		public void RequestTextMessages()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_text_messages);
-		}
+            DebugLine("Send: Request Data TextMsgs");
+        }
 
         public void RequestStopCommunication()
         {
             DPort.WriteBuffer(DataConstants.poll_request_stop_com);
+            DebugLine("Send: Request Stop Communication");
+
         }
 
         public void RequestRealtimeDataConfiguration()
         {
             DPort.WriteBuffer(DataConstants.poll_request_real_time_data_config);
+            DebugLine("Send: Request Realtime Config");
+        }
+
+        public void SendNOP()
+        {
+            DPort.WriteBuffer(DataConstants.poll_request_no_operation);
+            DebugLine("Send: NOP");
         }
 
         public void SendDeviceID()
@@ -224,7 +244,7 @@ namespace VSCaptureDrgVent
             temptxbufflist.AddRange(MedibusVer);
 
             CommandEchoResponse(temptxbufflist.ToArray());
-
+            DebugLine("Send: Device ID (response)");
         }
 
         public void ReadRealtimeConfigResponse(byte[] packetdata)
@@ -320,6 +340,7 @@ namespace VSCaptureDrgVent
             }
 
             DPort.WriteBuffer(temptxbufflist.ToArray());
+            DebugLine("Send: Configure realtime transmission (command)");
         }
 
         public void EnableDataStreams()
@@ -359,6 +380,7 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 1to4");
         }
 
         public void EnableDataStream5to8()
@@ -378,6 +400,7 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 5to8");
         }
 
         public void EnableDataStream9to12()
@@ -397,6 +420,7 @@ namespace VSCaptureDrgVent
 
             byte[] finalbuff = temptxbufflist.ToArray();
             DPort.Write(finalbuff, 0, finalbuff.Length);
+            DebugLine("Send: Enable Data Stream 9to12");
         }
 
         public void DisableDataStream1to4()
@@ -651,7 +675,7 @@ namespace VSCaptureDrgVent
             foreach (WaveValResult WavValResult in Wavevalues)
             {
                 int interval = Int32.Parse(WavValResult.RtConfigData.interval);
-                WavValResult.Relativetimestamp = (m_RealtiveTimeCounter+(i++*interval)).ToString();
+                WavValResult.Relativetimestamp = (m_RealtiveTimeCounter+(i++*(interval/1000))).ToString();
 
                 strbuildwavevalues.Append(WavValResult.Timestamp);
                 strbuildwavevalues.Append(',');
@@ -685,6 +709,26 @@ namespace VSCaptureDrgVent
 
         }
 
+        public async Task SendCycledRequests(int nInterval)
+        {
+            int nmillisecond = nInterval * 1000;
+            if (nmillisecond != 0)
+            {
+                do
+                {
+                    if (m_MEDIBUSstart == true)
+                    {
+                        RequestMeasuredDataCP1();
+                    }
+                    await Task.Delay(nmillisecond);
+        
+                }
+                while (true);
+            }
+            if (m_MEDIBUSstart == true) RequestMeasuredDataCP1();
+
+        }
+
         public async Task SendCycledPollDataRequestCP1(int nInterval)
         {
             int nmillisecond = nInterval * 1000;
@@ -692,13 +736,16 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    RequestMeasuredDataCP1();
+                    if(m_MEDIBUSstart == true)
+                    {
+                        RequestMeasuredDataCP1();
+                    }
                     await Task.Delay(nmillisecond);
 
                 }
                 while (true);
             }
-			RequestMeasuredDataCP1();
+            if (m_MEDIBUSstart == true) RequestMeasuredDataCP1();
 
 		}
 
@@ -709,13 +756,16 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-					RequestMeasuredDataCP2();
+                    if (m_MEDIBUSstart == true)
+                    {
+                        RequestMeasuredDataCP2();
+                    }
                     await Task.Delay(nmillisecond);
 
                 }
                 while (true);
             }
-			RequestMeasuredDataCP2();
+            if (m_MEDIBUSstart == true) RequestMeasuredDataCP2();
 
 		}
 
@@ -726,13 +776,16 @@ namespace VSCaptureDrgVent
 			{
 				do
 				{
-					RequestDeviceSettings();
+                    if (m_MEDIBUSstart == true)
+                    {
+                        RequestDeviceSettings();
+                    }
                     await Task.Delay(nmillisecond);
 
 				}
 				while (true);
 			}
-			RequestDeviceSettings();
+            if (m_MEDIBUSstart == true) RequestDeviceSettings();
 		}
 
 		public async Task SendCycledPollTextMessages(int nInterval)
@@ -742,13 +795,16 @@ namespace VSCaptureDrgVent
 			{
 				do
 				{
-					RequestTextMessages();
+                    if (m_MEDIBUSstart == true)
+                    {
+                        RequestTextMessages();
+                    }
 					await Task.Delay(nmillisecond);
 
 				}
 				while (true);
 			}
-			RequestTextMessages();
+            if (m_MEDIBUSstart == true) RequestTextMessages();
 		}
 
         public async Task KeepConnectionAlive(int nInterval)
@@ -758,13 +814,14 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    DPort.WriteBuffer(DataConstants.poll_request_no_operation);
+                    SendNOP();
+                    DebugLine("Send: NOP");
                     await Task.Delay(nmillisecond);
 
                 }
                 while (true);
             }
-            DPort.WriteBuffer(DataConstants.poll_request_no_operation);
+            SendNOP();
         }
 
         public void WriteBuffer(byte[] txbuf)
@@ -893,81 +950,93 @@ namespace VSCaptureDrgVent
             switch (responsetype)
             {
                 case "\x1bQ": //ICC request
+                    DebugLine("Received: ICC request");
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
-                    //WaitForMilliSeconds(200);
+                    WaitForMilliSeconds(200);
                     RequestDevID();
                     break;
                 case "\x01Q": //ICC response
+                    DebugLine("Received: ICC response");
+                    m_MEDIBUSstart = true;
                     RequestDevID();
-                    /*if (m_realtimestart == false)
-                    {
-                        RequestRealtimeDataConfiguration();
-                        m_realtimestart = true;
-                        WaitForMilliSeconds(200);
-                    }
-                    RequestMeasuredDataCP1();*/
                     break;
                 case "\x1bR": //Device ID request
+                    DebugLine("Received: Device ID request");
                     //Send empty or complete device id response
                     SendDeviceID();
+                    m_MEDIBUSstart = true;
                     break;
-                case "\x01R":
-                    //Device id response
-                    if(m_realtimestart == false)
+                case "\x01R": //Device id response
+                    DebugLine("Received: Device ID response");
+                    m_MEDIBUSstart = true;
+                    if (m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
                         m_realtimestart = true;
-                        WaitForMilliSeconds(200);
                     }
-                    RequestMeasuredDataCP1();
                     break;
-                case "\x01S":
-                    //Request realtime config respone
+                case "\x01S": //Realtime config respone
+                    DebugLine("Received: Realtime Config Response");
                     ReadRealtimeConfigResponse(packetbuffer);
                     ConfigureRealtimeTransmission();
                     break;
-                case "\x01T":
-                    //Realtime configuration transmission response
+                case "\x01T": //Realtime configuration transmission response
+                    DebugLine("Received: Realtime Config Transmission response");
                     EnableDataStreams();
                     break;
-                case "\x1bV":
-                    //Realtime configuration changed response
+                case "\x1bV": //Realtime configuration changed command
+                    DebugLine("Received: Realtime config changed command");
                     DisableDataStreams();
                     m_realtimestart = false;
-                    // Configure realtime transmission to reenable realtime data
-                    ConfigureRealtimeTransmission();
+                    //Request realtime configuration to reenable realtime data
+                    RequestRealtimeDataConfiguration();
+                    m_realtimestart = true;
                     break;
-                case "\x01$":
-                    //Data response cp1
+                case "\x01$": //Data response cp1
+                    DebugLine("Received: Data CP1 response");
                     ParseDataResponseMeasuredCP1(packetbuffer);
                     RequestMeasuredDataCP2();
                     break;
-                case "\x01+":
-                    //Data response cp2
+                case "\x01+": //Data response cp2
+                    DebugLine("Received: Data CP2 response");
                     ParseDataResponseMeasuredCP2(packetbuffer);
                     RequestDeviceSettings();
                     break;
-                case "\x01)":
+                case "\x01)": //Data response device settings
+                    DebugLine("Received: Data device settings response");
                     ParseDataDeviceSettings(packetbuffer);
                     RequestTextMessages();
                     break;
-                case "\x01*":
+                case "\x01*": //Data response text messages
+                    DebugLine("Received: Data text messages response");
                     ParseDataTextMessages(packetbuffer);
                     break;
                 case "\x01\x30": //NOP Response
+                    DebugLine("Received: NOP response");
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
                 case "\x1b\x30": //NOP request
-                    //NOP
+                    DebugLine("Received: NOP request");
                     byte[] nopresponse2 = { 0x30 };
                     CommandEchoResponse(nopresponse2);
                     break;
-                default:
+                default: // Unknown message
+                    DebugLine("Received: Unknown message");
+                    if (responsetype.Substring(0,1) == "\x1b")
+                    {
+                        byte[] echoresponse = Encoding.ASCII.GetBytes(responsetype.Substring(1, 1));
+                        CommandEchoResponse(echoresponse);
+                    }
                     break;
             }
 
+        }
+
+        public void DebugLine(string msg)
+        {
+            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - " + msg);
         }
 
         public void CommandEchoResponse(byte[] commandbuffer)
@@ -1196,27 +1265,39 @@ namespace VSCaptureDrgVent
             switch (bvalue)
             {
                 case DataConstants.BOFRESPCHAR:
-                    m_storestart1 = true;
+                    m_storestartResp = true;
                     m_storeend = false;
-                    m_bList.Add(bvalue);
+                    m_bRespList.Add(bvalue);
                     break;
                 case DataConstants.BOFCOMCHAR:
-                    m_storestart2 = true;
+                    m_storestartCom = true;
                     m_storeend = false;
-                    m_bList.Add(bvalue);
+                    m_bComList.Add(bvalue);
                     break;
                 case DataConstants.EOFCHAR:
-                    m_storestart1 = false;
-                    m_storestart2 = false;
+                    // If both m_storestartResp and m_storestartCom are true, the Command (Com) is embedded.
+                    // In this case EOF refers to Com.
+                    if (m_storestartCom == true)
+                    {
+                        m_bList = m_bComList;
+                        m_storestartCom = false;
+                    }
+                    else if (m_storestartResp == true)
+                    {
+                        m_bList = m_bRespList;
+                        m_storestartResp = false;
+                    }
                     m_storeend = true;
                     break;
                 default:
-                    if((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
+                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed
+                    if ((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
                     {
                         //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
                         m_RealTimeByteList.Add(bvalue);
                     }
-                    else if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
+                    else if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
+                    else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
                     break;
             }
 
@@ -1255,6 +1336,7 @@ namespace VSCaptureDrgVent
                     else
                     {
                         Console.WriteLine("Checksum Error");
+                        DebugLine("Checksum Error");
                         NAKResponse();
                     }
 

@@ -113,12 +113,13 @@ namespace VSCaptureDrgVent
                 Console.WriteLine();
                 Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in same folder");
 
-                //_serialPort.RequestICC();
+                _serialPort.RequestICC();
                 //_serialPort.RequestDevID();
+                //Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
 
-                Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
                 WaitForMilliSeconds(200);
 
+                Task.Run(() => _serialPort.SendCycledRequests(nInterval));
                 /*Task.Run(() => _serialPort.SendCycledPollDataRequestCP1(nInterval));
                 WaitForMilliSeconds(200);
                 Task.Run(() => _serialPort.SendCycledPollDataRequestCP2(nInterval));
