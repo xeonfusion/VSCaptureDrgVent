@@ -671,7 +671,7 @@ namespace VSCaptureDrgVent
             foreach (WaveValResult WavValResult in Wavevalues)
             {
                 int interval = Int32.Parse(WavValResult.RtConfigData.interval);
-                WavValResult.Relativetimestamp = (m_RealtiveTimeCounter+(i++*interval)).ToString();
+                WavValResult.Relativetimestamp = (m_RealtiveTimeCounter+(i++*(interval/1000))).ToString();
 
                 strbuildwavevalues.Append(WavValResult.Timestamp);
                 strbuildwavevalues.Append(',');
