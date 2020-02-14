@@ -951,6 +951,9 @@ namespace VSCaptureDrgVent
                 case "\x01R": //Device id response
                     DebugLine("Received: Device ID response");
                     m_MEDIBUSstart = true;
+
+                    WaitForMilliSeconds(200);
+                    RequestRealtimeDataConfiguration();
                     break;
 
                 case "\x01S": // Realtime Config Response
