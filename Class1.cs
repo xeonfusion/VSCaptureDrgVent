@@ -322,6 +322,26 @@ namespace VSCaptureDrgVent
             DPort.WriteBuffer(temptxbufflist.ToArray());
         }
 
+        public void EnableDataStreams()
+        {
+            EnableDataStream1to4();
+            if (m_nWaveformSet == 4)
+            {
+                EnableDataStream5to8();
+                EnableDataStream9to12();
+            }
+        }
+
+        public void DisableDataStreams()
+        {
+            DisableDataStream1to4();
+            if (m_nWaveformSet == 4)
+            {
+                DisableDataStream5to8();
+                DisableDataStream9to12();
+            }
+        }
+
         public void EnableDataStream1to4()
         {
             const byte SyncByte = 0xD0;
@@ -872,44 +892,35 @@ namespace VSCaptureDrgVent
 
             switch (responsetype)
             {
-                case "\x1bQ":
+                case "\x1bQ": //ICC request
                     byte[] icccommandresponse = {0x51};
                     CommandEchoResponse(icccommandresponse);
-                    WaitForMilliSeconds(200);
+                    //WaitForMilliSeconds(200);
                     RequestDevID();
                     break;
-                case "\x01Q":
-                    byte[] iccresponse = { 0x51 };
-                    //RequestDevID();
-                    if (m_realtimestart == false)
+                case "\x01Q": //ICC response
+                    RequestDevID();
+                    /*if (m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
                         m_realtimestart = true;
                         WaitForMilliSeconds(200);
                     }
-                    RequestMeasuredDataCP1();
+                    RequestMeasuredDataCP1();*/
                     break;
-                case "\x1bR":
+                case "\x1bR": //Device ID request
                     //Send empty or complete device id response
-                    //byte[] deviceidcommandresponse = { 0x52 };
-                    //CommandEchoResponse(deviceidcommandresponse);
                     SendDeviceID();
                     break;
                 case "\x01R":
                     //Device id response
-                    /*if(m_realtimestart == false)
+                    if(m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
                         m_realtimestart = true;
                         WaitForMilliSeconds(200);
                     }
                     RequestMeasuredDataCP1();
-                    WaitForMilliSeconds(200);
-                    RequestMeasuredDataCP2();
-                    WaitForMilliSeconds(200);
-                    RequestDeviceSettings();
-                    WaitForMilliSeconds(200);
-                    RequestTextMessages();*/
                     break;
                 case "\x01S":
                     //Request realtime config respone
@@ -918,22 +929,14 @@ namespace VSCaptureDrgVent
                     break;
                 case "\x01T":
                     //Realtime configuration transmission response
-                    EnableDataStream1to4();
-                    if(m_nWaveformSet ==4)
-                    {
-                        EnableDataStream5to8();
-                        EnableDataStream9to12();
-                    }
+                    EnableDataStreams();
                     break;
                 case "\x1bV":
                     //Realtime configuration changed response
-                    DisableDataStream1to4();
-                    if (m_nWaveformSet == 4)
-                    {
-                        DisableDataStream5to8();
-                        DisableDataStream9to12();
-                    }
+                    DisableDataStreams();
                     m_realtimestart = false;
+                    // Configure realtime transmission to reenable realtime data
+                    ConfigureRealtimeTransmission();
                     break;
                 case "\x01$":
                     //Data response cp1
@@ -952,12 +955,11 @@ namespace VSCaptureDrgVent
                 case "\x01*":
                     ParseDataTextMessages(packetbuffer);
                     break;
-                case "\x010":
-                    //NOP
+                case "\x01\x30": //NOP Response
                     byte[] nopresponse = { 0x30 };
                     CommandEchoResponse(nopresponse);
                     break;
-                case "\x1b0":
+                case "\x1b\x30": //NOP request
                     //NOP
                     byte[] nopresponse2 = { 0x30 };
                     CommandEchoResponse(nopresponse2);
@@ -1214,7 +1216,7 @@ namespace VSCaptureDrgVent
                         //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
                         m_RealTimeByteList.Add(bvalue);
                     }
-                    if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
+                    else if ((m_storestart1 == true || m_storestart2 == true) && m_storeend == false) m_bList.Add(bvalue);
                     break;
             }
 
