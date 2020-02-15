@@ -1277,16 +1277,26 @@ namespace VSCaptureDrgVent
                 case DataConstants.EOFCHAR:
                     // If both m_storestartResp and m_storestartCom are true, the Command (Com) is embedded.
                     // In this case EOF refers to Com.
-                    if (m_storestartCom == true)
+                    if(m_storestartCom == true && m_storestartResp == true)
                     {
-                        m_bList = m_bComList;
+                        m_bList.AddRange(m_bComList);
+                        m_bComList.RemoveRange(0, m_bComList.Count());
+                        m_bRespList.RemoveRange(0, m_bRespList.Count());
+                        m_storestartCom = false;
+                    }
+                    else if (m_storestartCom == true)
+                    {
+                        m_bList.AddRange(m_bComList);
+                        m_bComList.RemoveRange(0, m_bComList.Count());
                         m_storestartCom = false;
                     }
                     else if (m_storestartResp == true)
                     {
-                        m_bList = m_bRespList;
+                        m_bList.AddRange(m_bRespList);
+                        m_bRespList.RemoveRange(0, m_bRespList.Count());
                         m_storestartResp = false;
                     }
+                    
                     m_storeend = true;
                     break;
                 default:
