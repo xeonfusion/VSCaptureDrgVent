@@ -1283,6 +1283,7 @@ namespace VSCaptureDrgVent
                         m_bComList.RemoveRange(0, m_bComList.Count());
                         m_bRespList.RemoveRange(0, m_bRespList.Count());
                         m_storestartCom = false;
+                        m_storestartResp = false;
                     }
                     else if (m_storestartCom == true)
                     {
