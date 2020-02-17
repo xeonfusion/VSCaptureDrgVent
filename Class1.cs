@@ -715,7 +715,11 @@ namespace VSCaptureDrgVent
                     for (int i = 0; i < 10*60; i++) // count seconds up to 10 min, and restart
                     {
                         await Task.Delay(1000);
-                        if (m_MEDIBUSstart == true && i % nInterval == 0) // 0 (-1: do not request slow data)
+                        if (m_MEDIBUSstart == false)
+                        {
+                            RequestICC();
+                        }
+                        else if (i % nInterval == 0) // 0 (-1: do not request slow data)
                         {
                             RequestMeasuredDataCP1();
                         } 
@@ -937,7 +941,6 @@ namespace VSCaptureDrgVent
                 case "\x01Q": // ICC response
                     DebugLine("Received: ICC response");
 
-                    m_MEDIBUSstart = true;
                     RequestDevID();
                     break;
 
