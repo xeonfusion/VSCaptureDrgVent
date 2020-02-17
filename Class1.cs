@@ -487,7 +487,7 @@ namespace VSCaptureDrgVent
 
         public void ParseRealtimeDataResponse()
         {
-            if(m_RealTimeByteList.Count()>2 && m_nWaveformSet!=0)
+            if(m_RealTimeByteList.Count()>2 && m_nWaveformSet!=0 && m_realtimestart ==true)
             {
                 byte[] RealTimeByteArray = m_RealTimeByteList.ToArray();
                 
@@ -973,13 +973,13 @@ namespace VSCaptureDrgVent
                     if (m_realtimestart == false)
                     {
                         RequestRealtimeDataConfiguration();
-                        m_realtimestart = true;
                     }
                     break;
                 case "\x01S": //Realtime config respone
                     DebugLine("Received: Realtime Config Response");
                     ReadRealtimeConfigResponse(packetbuffer);
                     ConfigureRealtimeTransmission();
+                    m_realtimestart = true;
                     break;
                 case "\x01T": //Realtime configuration transmission response
                     DebugLine("Received: Realtime Config Transmission response");
