@@ -1035,6 +1035,8 @@ namespace VSCaptureDrgVent
                     m_MEDIBUSstart = true;
 
                     WaitForMilliSeconds(200);
+                    ConfigureDataResponseCommand();
+                    WaitForMilliSeconds(200);
                     RequestRealtimeDataConfiguration();
                     break;
 
