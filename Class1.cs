@@ -184,7 +184,86 @@ namespace VSCaptureDrgVent
             DebugLine("Send: Request DevID");
         }
 
-		public void RequestMeasuredDataCP1()
+        public void ConfigureDataResponseCommand()
+        {
+            // Replace with setting file 
+            // From here ------------
+            string[] CP1 = { 
+                "Dynamic_compliance",
+                "Mean_airway_pressure",
+                "Positive_endexpiratory_pressure",
+                "Peak_inspiratory_pressure",
+                "Tidal_volume"
+                };
+
+            string[] CP2 = {
+                "Elastance",
+                "Time_constant",
+                "Inspiratory_tidal_volume",
+                "Leakage_of_breathing_system",
+                "Compliance_of_the_breathing_system_including_patient_circuit",
+                "Compliance_of_the_breathing_hoses"
+                };
+
+            string[] DeviceSettings = {
+                "Elastance",
+                "Time_constant",
+                "Inspiratory_tidal_volume",
+                "Leakage_of_breathing_system",  
+                "Compliance_of_the_breathing_system_including_patient_circuit",
+                "Compliance_of_the_breathing_hoses"
+                };
+
+            var test_custom_data_response = new List<KeyValuePair<byte, List<string>>>()
+            {
+                new KeyValuePair<byte, List<string>>(0x24, new List<string>(CP1)),
+                new KeyValuePair<byte, List<string>>(0x2B, new List<string>(CP2)),
+                new KeyValuePair<byte, List<string>>(0x29, new List<string>(DeviceSettings))
+            };
+
+            // To here ----------------
+
+            List<byte> temptxbufflist = new List<byte>();
+
+            // For each setting add datatype (CP1, CP2, Device Settings etc) and datacode.
+            foreach (KeyValuePair<byte, List<string>> data_type in test_custom_data_response)
+            {
+
+                foreach (string data_code in data_type.Value)
+                {
+                    temptxbufflist.Add(data_type.Key);
+
+                    switch (data_type.Key)
+                    {
+                        case 0x24:
+                            temptxbufflist.Add((byte)Enum.Parse(typeof(DataConstants.MedibusXMeasurementCP1), data_code));
+                            break;
+
+                        case 0x2B:
+                            temptxbufflist.Add((byte)Enum.Parse(typeof(DataConstants.MedibusXMeasurementCP2), data_code));
+                            break;
+
+                        case 0x29:
+                            temptxbufflist.Add((byte)Enum.Parse(typeof(DataConstants.MedibusXDeviceSettings), data_code));
+                            break;
+
+                        case 0x2A:
+                            temptxbufflist.Add((byte)Enum.Parse(typeof(DataConstants.MedibusXTextMessages), data_code));
+                            break;
+                    }
+
+
+                }
+
+            }
+
+            DPort.WriteBuffer(temptxbufflist.ToArray());
+            DebugLine("Send: Configure Data Response Command");
+
+        }
+
+
+        public void RequestMeasuredDataCP1()
 		{
 			DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
             DebugLine("Send: Request Data CP1");
