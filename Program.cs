@@ -54,20 +54,21 @@ namespace VSCaptureDrgVent
 
             Console.WriteLine();
             Console.WriteLine("Numeric Data Transmission sets:");
-            Console.WriteLine("1. 5 second");
-            Console.WriteLine("2. 10 second");
-            Console.WriteLine("3. 1 minute");
-            Console.WriteLine("4. 5 minute");
-            Console.WriteLine("5. Single poll");
+            Console.WriteLine("1. 1 second");
+            Console.WriteLine("2. 5 second");
+            Console.WriteLine("3. 10 second");
+            Console.WriteLine("4. 1 minute");
+            Console.WriteLine("5. 5 minute");
+            Console.WriteLine("6. Single poll");
             Console.WriteLine();
-            Console.Write("Choose Data Transmission interval (1-5):");
+            Console.Write("Choose Data Transmission interval (1-6):");
 
             string sIntervalset = Console.ReadLine();
-            int[] setarray = { 5, 10, 60, 300, 0 };
+            int[] setarray = { 1, 5, 10, 60, 300, 0 };
             short nIntervalset = 2;
             int nInterval = 10;
             if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset);
-            if (nIntervalset > 0 && nIntervalset < 6) nInterval = setarray[nIntervalset - 1];
+            if (nIntervalset > 0 && nIntervalset < 7) nInterval = setarray[nIntervalset - 1];
 
             Console.WriteLine();
             Console.WriteLine("Waveform data export options:");
