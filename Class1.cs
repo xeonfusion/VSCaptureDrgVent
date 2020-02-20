@@ -1291,6 +1291,7 @@ namespace VSCaptureDrgVent
                     // In this case EOF refers to Com.
                     if (m_storestartCom == true)
                     {
+                        if (m_storestartResp == true) DebugLine("Embedded command");
                         m_bList = m_bComList;
                         m_storestartCom = false;
                     }
