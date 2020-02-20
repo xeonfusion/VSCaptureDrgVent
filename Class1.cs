@@ -206,12 +206,15 @@ namespace VSCaptureDrgVent
                 };
 
             string[] DeviceSettings = {
-                "Elastance",
-                "Time_constant",
-                "Inspiratory_tidal_volume",
-                "Leakage_of_breathing_system",  
-                "Compliance_of_the_breathing_system_including_patient_circuit",
-                "Compliance_of_the_breathing_hoses"
+                "Inspiratory_time",
+                "Respiratory_rate",
+                "Positive_end_expiratory_pressure",
+                "Pressure_rise_time",
+                "Fresh_gas_flow",
+                "Inspiratory_pressure",
+                "Age",
+                "Oxygen_concentration_in_the_fresh",
+                "Patient_height"
                 };
 
             var test_custom_data_response = new List<KeyValuePair<byte, List<string>>>()
@@ -224,6 +227,10 @@ namespace VSCaptureDrgVent
             // To here ----------------
 
             List<byte> temptxbufflist = new List<byte>();
+
+            byte[] configuredataresponse = { 0x4A };
+
+            temptxbufflist.AddRange(configuredataresponse);
 
             // For each setting add datatype (CP1, CP2, Device Settings etc) and datacode.
             foreach (KeyValuePair<byte, List<string>> data_type in test_custom_data_response)
