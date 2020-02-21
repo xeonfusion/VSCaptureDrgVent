@@ -189,41 +189,32 @@ namespace VSCaptureDrgVent
 
 		public void RequestMeasuredDataCP1()
 		{
-            m_runningCommand = true;
             DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
             DebugLine("Send: Request Data CP1");
-            m_runningCommand = false;
         }
 
         public void RequestMeasuredDataCP2()
         {
-            m_runningCommand = true;
             DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage2);
             DebugLine("Send: Request Data CP2");
-            m_runningCommand = false;
         }
 
         public void RequestDeviceSettings()
 		{
-            m_runningCommand = true;
             DPort.WriteBuffer(DataConstants.poll_request_device_settings);
             DebugLine("Send: Request Data Dev settings");
-            m_runningCommand = false;
         }
 
         public void RequestTextMessages()
 		{
-            m_runningCommand = true;
             DPort.WriteBuffer(DataConstants.poll_request_text_messages);
             DebugLine("Send: Request Data TextMsgs");
-            m_runningCommand = false;
         }
 
         public void RequestStopCommunication()
         {
             DPort.WriteBuffer(DataConstants.poll_request_stop_com);
             DebugLine("Send: Request Stop Communication");
-
         }
 
         public void RequestRealtimeDataConfiguration()
@@ -839,6 +830,7 @@ namespace VSCaptureDrgVent
 
         public void WriteBuffer(byte[] txbuf)
         {
+            m_runningCommand = true;
             List<byte> temptxbufflist = new List<byte>();
 
             int framelen = txbuf.Length;
@@ -872,6 +864,7 @@ namespace VSCaptureDrgVent
                 }
 
             }
+            m_runningCommand = false;
         }
 
         public void ClearReadBuffer()
