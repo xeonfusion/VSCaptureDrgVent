@@ -815,7 +815,6 @@ namespace VSCaptureDrgVent
                 do
                 {
                     SendNOP();
-                    DebugLine("Send: NOP");
                     await Task.Delay(nmillisecond);
 
                 }
