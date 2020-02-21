@@ -114,25 +114,12 @@ namespace VSCaptureDrgVent
                 Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in same folder");
 
                 _serialPort.RequestICC();
-                //_serialPort.RequestDevID();
-                //Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
-
                 WaitForMilliSeconds(200);
 
                 Task.Run(() => _serialPort.SendCycledRequests(nInterval));
-                /*Task.Run(() => _serialPort.SendCycledPollDataRequestCP1(nInterval));
-                WaitForMilliSeconds(200);
-                Task.Run(() => _serialPort.SendCycledPollDataRequestCP2(nInterval));
-                WaitForMilliSeconds(200);
-                Task.Run(() => _serialPort.SendCycledPollDeviceSettings(nInterval));
-                WaitForMilliSeconds(200);
-                Task.Run(() => _serialPort.SendCycledPollTextMessages(nInterval));
-                WaitForMilliSeconds(200);*/
-
-
+                
                 //RequestRealtimeData after DevID response
-                //_serialPort.RequestRealtimeDataConfiguration();
-
+                
                 Task.Run(() => _serialPort.KeepConnectionAlive(2));
 
                 Console.WriteLine("Press Escape button to Stop");

@@ -60,6 +60,8 @@ namespace VSCaptureDrgVent
         private List<byte> m_bList = new List<byte>();
         private List<byte> m_bRespList = new List<byte>();
         private List<byte> m_bComList = new List<byte>();
+        private bool m_runningCommand = false;
+        private bool m_readingResponse = false;
 
         public List<NumericValResult> m_NumericValList = new List<NumericValResult>();
         public List<string> m_NumValHeaders = new List<string>();
@@ -814,13 +816,17 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    SendNOP();
+                    if(m_MEDIBUSstart == true && m_readingResponse == false)
+                    {
+                        SendNOP();
+                    }
                     await Task.Delay(nmillisecond);
+
 
                 }
                 while (true);
             }
-            SendNOP();
+            if (m_MEDIBUSstart == true && m_readingResponse == false) SendNOP();
         }
 
         public void WriteBuffer(byte[] txbuf)
@@ -910,9 +916,7 @@ namespace VSCaptureDrgVent
                         FrameList.RemoveRange(0, FrameList.Count);
 
                     }
-
-                    //ParseRealtimeDataResponse();
-
+   
                 }
 
             }
@@ -945,6 +949,8 @@ namespace VSCaptureDrgVent
             string responsetype = headerdataresponse.Substring(0, 2);
 
             m_strTimestamp = DateTime.Now.ToString();
+
+            m_readingResponse = true;
 
             switch (responsetype)
             {
@@ -990,7 +996,6 @@ namespace VSCaptureDrgVent
                     m_realtimestart = false;
                     //Request realtime configuration to reenable realtime data
                     RequestRealtimeDataConfiguration();
-                    m_realtimestart = true;
                     break;
                 case "\x01$": //Data response cp1
                     DebugLine("Received: Data CP1 response");
@@ -1030,6 +1035,8 @@ namespace VSCaptureDrgVent
                     }
                     break;
             }
+
+            m_readingResponse = false;
 
         }
 
