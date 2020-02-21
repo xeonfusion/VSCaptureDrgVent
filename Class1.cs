@@ -189,26 +189,34 @@ namespace VSCaptureDrgVent
 
 		public void RequestMeasuredDataCP1()
 		{
-			DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
+            m_runningCommand = true;
+            DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage1);
             DebugLine("Send: Request Data CP1");
+            m_runningCommand = false;
         }
 
         public void RequestMeasuredDataCP2()
         {
+            m_runningCommand = true;
             DPort.WriteBuffer(DataConstants.poll_request_config_measured_data_codepage2);
             DebugLine("Send: Request Data CP2");
+            m_runningCommand = false;
         }
 
-		public void RequestDeviceSettings()
+        public void RequestDeviceSettings()
 		{
-			DPort.WriteBuffer(DataConstants.poll_request_device_settings);
+            m_runningCommand = true;
+            DPort.WriteBuffer(DataConstants.poll_request_device_settings);
             DebugLine("Send: Request Data Dev settings");
+            m_runningCommand = false;
         }
 
-		public void RequestTextMessages()
+        public void RequestTextMessages()
 		{
-			DPort.WriteBuffer(DataConstants.poll_request_text_messages);
+            m_runningCommand = true;
+            DPort.WriteBuffer(DataConstants.poll_request_text_messages);
             DebugLine("Send: Request Data TextMsgs");
+            m_runningCommand = false;
         }
 
         public void RequestStopCommunication()
@@ -816,7 +824,7 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    if(m_MEDIBUSstart == true && m_readingResponse == false)
+                    if(m_MEDIBUSstart == true && m_readingResponse == false && m_runningCommand == false)
                     {
                         SendNOP();
                     }
@@ -826,7 +834,7 @@ namespace VSCaptureDrgVent
                 }
                 while (true);
             }
-            if (m_MEDIBUSstart == true && m_readingResponse == false) SendNOP();
+            if (m_MEDIBUSstart == true && m_readingResponse == false && m_runningCommand == false) SendNOP();
         }
 
         public void WriteBuffer(byte[] txbuf)
