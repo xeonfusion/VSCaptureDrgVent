@@ -115,7 +115,7 @@ namespace VSCaptureDrgVent
                 //_serialPort.RequestDevID();
 
                 //Task.Run(() => _serialPort.SendCycledICCRequest(nInterval));
-                WaitForMilliSeconds(200);
+                WaitForMilliSeconds(2000);
 
                 Task.Run(() => _serialPort.SendCycledRequests(nInterval));
                 /*WaitForMilliSeconds(200);
