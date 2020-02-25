@@ -352,7 +352,9 @@ namespace VSCaptureDrgVent
             DisableDataStream1to4();
             if (m_nWaveformSet == 4)
             {
+                WaitForMilliSeconds(200);
                 DisableDataStream5to8();
+                WaitForMilliSeconds(200);
                 DisableDataStream9to12();
             }
         }
