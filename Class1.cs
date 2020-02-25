@@ -712,18 +712,19 @@ namespace VSCaptureDrgVent
             {
                 do
                 {
-                    for (int i = 0; i < 10*60; i++) // count seconds up to 10 min, and restart
+                    for (int i_sec = 0; i_sec < 10*60; i_sec++)
+                    // count seconds up to 10 min, and restart (just some limit higher that the maximum slow data interval)
                     {
                         await Task.Delay(1000);
                         if (m_MEDIBUSstart == false)
                         {
                             RequestICC();
                         }
-                        else if (i % nInterval == 0) // 0 (-1: do not request slow data)
+                        else if (i_sec % nInterval == 0) // 0 (-1: do not request slow data)
                         {
                             RequestMeasuredDataCP1();
                         } 
-                        else if (i % 2 == 0) // Send NOP request every other second if no other request is send
+                        else if (i_sec % 1 == 0) // Send NOP request every second if no other request is send
                         {
                             DPort.WriteBuffer(DataConstants.poll_request_no_operation);
                             DebugLine("Send: NOP");
