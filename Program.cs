@@ -89,10 +89,18 @@ namespace VSCaptureDrgVent
 
             Console.ReadKey(true);
 
+
+            string sStartTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string sOutFolderPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                                 sStartTime);
+
+            Directory.CreateDirectory(sOutFolderPath).ToString();
+
             try
             {
                 _serialPort.Open();
                 _serialPort.m_nWaveformSet = nWaveformSet;
+                _serialPort.m_sOutFolderPath = sOutFolderPath;
 
                 if (_serialPort.OSIsUnix())
                 {
@@ -109,7 +117,7 @@ namespace VSCaptureDrgVent
 
 
                 Console.WriteLine();
-                Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in same folder");
+                Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in folder: {0}", sStartTime);
 
                 _serialPort.RequestICC();
                 //_serialPort.RequestDevID();

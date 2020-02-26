@@ -82,6 +82,8 @@ namespace VSCaptureDrgVent
         public bool m_realtimestart = false;
         public bool m_MEDIBUSstart = false;
 
+        public string m_sOutFolderPath;
+
         public class NumericValResult
         {
             public string Timestamp;
@@ -651,7 +653,7 @@ namespace VSCaptureDrgVent
 
                     string WavValID = string.Format("{0}DrgWaveExport.csv", physioid);
 
-                    string pathcsv = Path.Combine(Directory.GetCurrentDirectory(), WavValID);
+                    string pathcsv = Path.Combine(m_sOutFolderPath, WavValID);
 
                     ExportNumValListToCSVFile(pathcsv, m_strbuildwavevalues);
 
@@ -859,7 +861,7 @@ namespace VSCaptureDrgVent
 
             try
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "DrgVentRawoutput.raw");
+                string path = Path.Combine(m_sOutFolderPath, "DrgVentRawoutput.raw");
 
                 int lenread = 0;
 
@@ -1412,7 +1414,7 @@ namespace VSCaptureDrgVent
             {
                 string filename = String.Format("DrgVent{0}DataExport.csv", datatype);
 
-                string pathcsv = Path.Combine(Directory.GetCurrentDirectory(), filename);
+                string pathcsv = Path.Combine(m_sOutFolderPath, filename);
 
                 m_strbuildheaders.Append("Time");
                 m_strbuildheaders.Append(',');
@@ -1443,7 +1445,7 @@ namespace VSCaptureDrgVent
                 WriteNumericHeadersList(datatype);
                 string filename = String.Format("DrgVent{0}DataExport.csv", datatype);
 
-                string pathcsv = Path.Combine(Directory.GetCurrentDirectory(), filename);
+                string pathcsv = Path.Combine(m_sOutFolderPath, filename);
 
                 m_strbuildvalues.Append(m_NumericValList.ElementAt(0).Timestamp);
                 m_strbuildvalues.Append(',');
