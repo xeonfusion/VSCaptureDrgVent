@@ -599,39 +599,47 @@ namespace VSCaptureDrgVent
                     WavValResult.Datastreamindex = datastreamindex.ToString();
                     WavValResult.Timestamp = dtime.ToString("G", DateTimeFormatInfo.InvariantInfo);
 
-                    byte wavecode = m_RealTimeReqWaveList.ElementAt(datastreamindex);
-                    byte[] wavecodearray = { wavecode };
-                    string wavedatacode = BitConverter.ToString(wavecodearray);
-                    WavValResult.PhysioID = Enum.GetName(typeof(DataConstants.MedibusXRealTimeData), wavecode);
-
-                    WavValResult.RespiratoryCycleState = RTdata.respsyncstate;
-
-                    WavValResult.RtConfigData = m_RtConfigRespList.Find(x => x.datacode == wavedatacode);
-                    if (WavValResult.RtConfigData != null)
+                    if (datastreamindex < m_RealTimeReqWaveList.Count())
                     {
-                        //int interval = Int32.Parse(WavValResult.RtConfigData.interval);
-                        int minvalue = Int32.Parse(WavValResult.RtConfigData.minvalue);
-                        int maxvalue = Int32.Parse(WavValResult.RtConfigData.maxvalue);
-                        int maxbinvalue = Int32.Parse(WavValResult.RtConfigData.maxbinvalue, NumberStyles.HexNumber);
+                        byte wavecode = m_RealTimeReqWaveList.ElementAt(datastreamindex);
                         
-                        byte[] rtdatabytes = RTdata.rtdatavalues.ElementAt(j);
+                        //byte wavecode = (byte)Int32.Parse(m_RtConfigRespList.ElementAt(datastreamindex).datacode);
 
-                        int firstbinvalue = (rtdatabytes[0] & 0x3F);
-                        int secondbinvalue = (rtdatabytes[1] & 0x3F);
+                        byte[] wavecodearray = { wavecode };
+                        string wavedatacode = BitConverter.ToString(wavecodearray);
+                        WavValResult.PhysioID = Enum.GetName(typeof(DataConstants.MedibusXRealTimeData), wavecode);
 
-                        //A realtime value is transmitted at a resolution of 12 bits
-                        int rtbinval = (firstbinvalue & 0x3F) | ((secondbinvalue & 0x3F) << 6);
+                        WavValResult.RespiratoryCycleState = RTdata.respsyncstate;
 
-                        double rtvalue = (((double)rtbinval / maxbinvalue) * (maxvalue - minvalue)) + minvalue;
-                        double finalrtvalue = Math.Round(rtvalue, 4);
+                        WavValResult.RtConfigData = m_RtConfigRespList.Find(x => x.datacode == wavedatacode);
+                        if (WavValResult.RtConfigData != null)
+                        {
+                            //int interval = Int32.Parse(WavValResult.RtConfigData.interval);
+                            int minvalue = Int32.Parse(WavValResult.RtConfigData.minvalue);
+                            int maxvalue = Int32.Parse(WavValResult.RtConfigData.maxvalue);
+                            int maxbinvalue = Int32.Parse(WavValResult.RtConfigData.maxbinvalue, NumberStyles.HexNumber);
 
-                        WavValResult.Value = finalrtvalue.ToString(CultureInfo.InvariantCulture);
-                        WavValResult.Relativetimecounter = m_RealtiveTimeCounter;
+                            byte[] rtdatabytes = RTdata.rtdatavalues.ElementAt(j);
 
-                        m_WaveValResultList.Add(WavValResult);
+                            int firstbinvalue = (rtdatabytes[0] & 0x3F);
+                            int secondbinvalue = (rtdatabytes[1] & 0x3F);
 
+                            //A realtime value is transmitted at a resolution of 12 bits
+                            int rtbinval = (firstbinvalue & 0x3F) | ((secondbinvalue & 0x3F) << 6);
+
+                            double rtvalue = (((double)rtbinval / maxbinvalue) * (maxvalue - minvalue)) + minvalue;
+                            double finalrtvalue = Math.Round(rtvalue, 4);
+
+                            WavValResult.Value = finalrtvalue.ToString(CultureInfo.InvariantCulture);
+                            WavValResult.Relativetimecounter = m_RealtiveTimeCounter;
+
+                            m_WaveValResultList.Add(WavValResult);
+
+                        }
                     }
-
+                    
+                    //byte wavecode = m_RealTimeReqWaveList.ElementAt(datastreamindex);
+ 
                 }
                 
             }
