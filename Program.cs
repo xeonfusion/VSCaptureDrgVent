@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -103,8 +103,12 @@ namespace VSCaptureDrgVent
                 else nWaveformSet = 1;
             }
 
-            Console.WriteLine("\nYou may now connect the serial cable to the Draeger Ventilator");
-            Console.WriteLine("Press any key to continue..");
+            Console.WriteLine("\nReady to request data the following settings:" +
+                "\n    Interval for numeric data sets: {0} second(s)" +
+                "\n    Realtime set:                 : {1}",
+                nInterval, nWaveformSet);
+            Console.WriteLine();
+            Console.WriteLine("Press any key to start recording...");
 
             Console.ReadKey(true);
 
