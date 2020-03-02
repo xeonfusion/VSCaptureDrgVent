@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
  * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
 
@@ -54,7 +54,7 @@ namespace VSCaptureDrgVent
 
             Console.WriteLine();
             Console.WriteLine("Numeric Data Transmission sets:");
-            Console.WriteLine("1. 1 second");
+            Console.WriteLine("1. 1 second (default)");
             Console.WriteLine("2. 5 second");
             Console.WriteLine("3. 10 second");
             Console.WriteLine("4. 1 minute");
@@ -65,8 +65,8 @@ namespace VSCaptureDrgVent
 
             string sIntervalset = Console.ReadLine();
             int[] setarray = { 1, 5, 10, 60, 300, 0 };
-            short nIntervalset = 2;
-            int nInterval = 10;
+            short nIntervalset = 1;
+            int nInterval = 1;
             if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset);
 
             // Check input
@@ -75,7 +75,7 @@ namespace VSCaptureDrgVent
                 Console.Write("Data Transmission must be in interval (1-6):");
                 sIntervalset = Console.ReadLine();
                 if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset); 
-                else nIntervalset = 0;
+                else nIntervalset = 1;
             }
                 
             nInterval = setarray[nIntervalset - 1];
@@ -83,7 +83,7 @@ namespace VSCaptureDrgVent
             Console.WriteLine();
             Console.WriteLine("Waveform data export options:");
             Console.WriteLine("0. None");
-            Console.WriteLine("1. Airway Pressure, Flow, Resp Volume");
+            Console.WriteLine("1. Airway Pressure, Flow, Resp Volume (default)");
             Console.WriteLine("2. Pleth, O2 conc.(%), CO2 conc.(mmHg), Primary agent conc.(%)");
             Console.WriteLine("3. Tracheal pressure, Inspiratory Flow");
             Console.WriteLine("4. All");
@@ -91,7 +91,7 @@ namespace VSCaptureDrgVent
             Console.Write("Choose Waveform data export priority option (0-4):");
 
             string sWaveformSet = Console.ReadLine();
-            short nWaveformSet = 0;
+            short nWaveformSet = 1;
             if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
 
             // Check input
@@ -100,7 +100,7 @@ namespace VSCaptureDrgVent
                 Console.Write("Waveform data export priority option must be in interval (0-4):");
                 sWaveformSet = Console.ReadLine();
                 if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
-                else nWaveformSet = 0;
+                else nWaveformSet = 1;
             }
 
             Console.WriteLine("\nYou may now connect the serial cable to the Draeger Ventilator");
