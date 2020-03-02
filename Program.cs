@@ -68,7 +68,17 @@ namespace VSCaptureDrgVent
             short nIntervalset = 2;
             int nInterval = 10;
             if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset);
-            if (nIntervalset > 0 && nIntervalset < 7) nInterval = setarray[nIntervalset - 1];
+
+            // Check input
+            while (!(nIntervalset >= 0 && nIntervalset < 7))
+            {
+                Console.Write("Data Transmission must be in interval (1-6):");
+                sIntervalset = Console.ReadLine();
+                if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset); 
+                else nIntervalset = 0;
+            }
+                
+            nInterval = setarray[nIntervalset - 1];
 
             Console.WriteLine();
             Console.WriteLine("Waveform data export options:");
@@ -83,6 +93,15 @@ namespace VSCaptureDrgVent
             string sWaveformSet = Console.ReadLine();
             short nWaveformSet = 0;
             if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
+
+            // Check input
+            while (!(nWaveformSet >= 0 && nWaveformSet < 5))
+            {
+                Console.Write("Waveform data export priority option must be in interval (0-4):");
+                sWaveformSet = Console.ReadLine();
+                if (sWaveformSet != "") nWaveformSet = Convert.ToInt16(sWaveformSet);
+                else nWaveformSet = 0;
+            }
 
             Console.WriteLine("\nYou may now connect the serial cable to the Draeger Ventilator");
             Console.WriteLine("Press any key to continue..");
