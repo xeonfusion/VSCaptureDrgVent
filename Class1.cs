@@ -1279,90 +1279,95 @@ namespace VSCaptureDrgVent
 
         public void CreateFrameListFromByte(byte bvalue)
         {
-            switch (bvalue)
+            // First, test if a byte is realtime or not.
+            if ((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
             {
-                case DataConstants.BOFRESPCHAR:
-                    m_storestartResp = true;
-                    m_storeend = false;
-                    m_bRespList.Add(bvalue);
-                    break;
-                case DataConstants.BOFCOMCHAR:
-                    m_storestartCom = true;
-                    m_storeend = false;
-                    m_bComList.Add(bvalue);
-                    break;
-                case DataConstants.EOFCHAR:
-                    // If both m_storestartResp and m_storestartCom are true, the Command (com) is embedded.
-                    // In this case EOF refers to Com.
-                    if (m_storestartCom == true)
-                    {
-                        if (m_storestartResp == true) DebugLine("Embedded command");
-                        m_bList = m_bComList;
-                        m_storestartCom = false;
-                    }
-                    else if (m_storestartResp == true)
-                    {
-                        m_bList = m_bRespList;
-                        m_storestartResp = false;
-                    }
-                    m_storeend = true;
-                    break;
-                default:
-                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed.
-                    if((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
-                    {
-                        //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
-                        m_RealTimeByteList.Add(bvalue);
-                    }
-                    else if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
-                    else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
-                    break;
+                //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
+                m_RealTimeByteList.Add(bvalue);
             }
-
-            if(m_storeend == true)
+            // If not, the byte is slow data.
+            else
             {
-                int framelen = m_bList.Count();
-                if (framelen != 0)
+                switch (bvalue)
                 {
-                    byte[] bArray = new byte[framelen];
-                    bArray = m_bList.ToArray();
-
-                    //serial data without checksum byte
-                    int userdataframelen = (framelen - 2);
-                    byte[] userdataArray = new byte[userdataframelen];
-
-                    //Get user data without checksum
-                    Array.Copy(bArray, 0, userdataArray, 0, userdataframelen);
-
-                    //Read checksum
-                    //byte checksumbyte = bArray[framelen - 1];
-                    byte[] checksumarray = new byte[2];
-                    Array.Copy(bArray, framelen-2, checksumarray, 0, 2);
-                    string checksumstr = Encoding.ASCII.GetString(checksumarray);
-
-                    //Calculate checksum
-                    Crc crccheck = new Crc();
-                    byte checksumcomputed = crccheck.ComputeChecksum(userdataArray);
-                    byte[] checksumcomputedarray = { checksumcomputed };
-                    string checksumcomputedstr = BitConverter.ToString(checksumcomputedarray);
-
-                    if (checksumcomputedstr == checksumstr)
-                    {
-                        FrameList.Add(userdataArray);
-                        //Console.WriteLine("Crc OK");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Checksum Error");
-                        DebugLine("Checksum Error");
-                        NAKResponse();
-                    }
-
-                    m_bList.RemoveRange(0, m_bList.Count);
-                    m_storeend = false;
-
+                    case DataConstants.BOFRESPCHAR:
+                        m_storestartResp = true;
+                        m_storeend = false;
+                        m_bRespList.Add(bvalue);
+                        break;
+                    case DataConstants.BOFCOMCHAR:
+                        m_storestartCom = true;
+                        m_storeend = false;
+                        m_bComList.Add(bvalue);
+                        break;
+                    case DataConstants.EOFCHAR:
+                        // If both m_storestartResp and m_storestartCom are true, the Command (com) is embedded.
+                        // In this case EOF refers to Com.
+                        if (m_storestartCom == true)
+                        {
+                            if (m_storestartResp == true) DebugLine("Embedded command");
+                            m_bList = m_bComList;
+                            m_storestartCom = false;
+                        }
+                        else if (m_storestartResp == true)
+                        {
+                            m_bList = m_bRespList;
+                            m_storestartResp = false;
+                        }
+                        m_storeend = true;
+                        break;
+                    default:
+                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed.
+                        if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
+                        else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
+                        break;
                 }
 
+                if (m_storeend == true)
+                {
+                    int framelen = m_bList.Count();
+                    if (framelen != 0)
+                    {
+                        byte[] bArray = new byte[framelen];
+                        bArray = m_bList.ToArray();
+
+                        //serial data without checksum byte
+                        int userdataframelen = (framelen - 2);
+                        byte[] userdataArray = new byte[userdataframelen];
+
+                        //Get user data without checksum
+                        Array.Copy(bArray, 0, userdataArray, 0, userdataframelen);
+
+                        //Read checksum
+                        //byte checksumbyte = bArray[framelen - 1];
+                        byte[] checksumarray = new byte[2];
+                        Array.Copy(bArray, framelen - 2, checksumarray, 0, 2);
+                        string checksumstr = Encoding.ASCII.GetString(checksumarray);
+
+                        //Calculate checksum
+                        Crc crccheck = new Crc();
+                        byte checksumcomputed = crccheck.ComputeChecksum(userdataArray);
+                        byte[] checksumcomputedarray = { checksumcomputed };
+                        string checksumcomputedstr = BitConverter.ToString(checksumcomputedarray);
+
+                        if (checksumcomputedstr == checksumstr)
+                        {
+                            FrameList.Add(userdataArray);
+                            //Console.WriteLine("Crc OK");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Checksum Error");
+                            DebugLine("Checksum Error");
+                            NAKResponse();
+                        }
+
+                        m_bList.RemoveRange(0, m_bList.Count);
+                        m_storeend = false;
+
+                    }
+
+                }
             }
         }
 
