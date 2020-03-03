@@ -347,6 +347,7 @@ namespace VSCaptureDrgVent
                 EnableDataStream5to8();
                 EnableDataStream9to12();
             }
+            m_realtimestart = true;
         }
 
         public void DisableDataStreams()
@@ -887,7 +888,7 @@ namespace VSCaptureDrgVent
 
                 if (DPort.BytesToRead == 0)
                 {
-                    ParseRealtimeDataResponse();
+                    if (m_realtimestart == true) ParseRealtimeDataResponse();
 
                     if (FrameList.Count > 0)
                     {
