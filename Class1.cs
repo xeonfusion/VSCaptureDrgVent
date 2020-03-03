@@ -491,6 +491,7 @@ namespace VSCaptureDrgVent
             if(m_RealTimeByteList.Count()>2 && m_nWaveformSet!=0)
             {
                 byte[] RealTimeByteArray = m_RealTimeByteList.ToArray();
+                int bytesSuccessfullyRead = 0;
                 
                 for (int i = 0; i < RealTimeByteArray.Length; i++)
                 {
@@ -524,15 +525,21 @@ namespace VSCaptureDrgVent
                                 i = j;
                             }
                         }
+
                         CreateDataStreamList(ref RTdata);
-                        if(RTdata.rtdatavalues.Count() !=0) m_RealTimeDataList.Add(RTdata);
+                        if (RTdata.rtdatavalues.Count() == RTdata.datastreamlist.Count())
+                        {
+                            m_RealTimeDataList.Add(RTdata);
+                            bytesSuccessfullyRead = i;
+                        }
                         
                     }
 
                 }
                 ReadRealTimeDataList();
+                m_RealTimeByteList.RemoveRange(0, bytesSuccessfullyRead);
             }
-            m_RealTimeByteList.RemoveRange(0, m_RealTimeByteList.Count());
+           
         }
 
         public void CreateDataStreamList(ref RealTimeData RTdata)
