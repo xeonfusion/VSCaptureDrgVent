@@ -529,6 +529,8 @@ namespace VSCaptureDrgVent
                         CreateDataStreamList(ref RTdata);
                         if (RTdata.rtdatavalues.Count() == RTdata.datastreamlist.Count())
                         {
+                            // This checks if the RTdata is complete. If not, these bytes will be 
+                            // caried over to the next iteration.
                             m_RealTimeDataList.Add(RTdata);
                             bytesSuccessfullyRead = i;
                         }
