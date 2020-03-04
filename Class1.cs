@@ -1130,8 +1130,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer, 2, dataarray, 0, dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 string DataCode;
@@ -1152,7 +1152,7 @@ namespace VSCaptureDrgVent
                     physio_id = Enum.GetName(typeof(DataConstants.MedibusXDeviceSettings), datacodebyte);
                     if (physio_id == null) physio_id = "UnknownID";
                     
-                    Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                    //Console.WriteLine("{0}: {1}", physio_id, DataValue);
                     //Console.WriteLine();
 
                     NumericValResult NumVal = new NumericValResult();
@@ -1182,8 +1182,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer,2,dataarray,0,dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 string DataCode;
@@ -1204,7 +1204,7 @@ namespace VSCaptureDrgVent
                     physio_id = Enum.GetName(enumtype, datacodebyte);
                     if (physio_id == null) physio_id = "UnknownID";
 
-                    Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                    //Console.WriteLine("{0}: {1}", physio_id, DataValue);
                     //Console.WriteLine();
 
                     NumericValResult NumVal = new NumericValResult();
@@ -1232,8 +1232,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer, 2, dataarray, 0, dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 int textitemlen = 0;
@@ -1259,8 +1259,8 @@ namespace VSCaptureDrgVent
                         physio_id = Enum.GetName(typeof(DataConstants.MedibusXTextMessages), datacodebyte);
                         if (physio_id == null) physio_id = "UnknownID";
 
-                        Console.WriteLine("{0}: {1}", physio_id, DataValue);
-                        Console.WriteLine();
+                        //Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                        //Console.WriteLine();
 
                         NumericValResult NumVal = new NumericValResult();
 
