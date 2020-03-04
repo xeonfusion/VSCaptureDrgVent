@@ -743,8 +743,10 @@ namespace VSCaptureDrgVent
                             DPort.WriteBuffer(DataConstants.poll_request_no_operation);
                             DebugLine("Send: NOP");
                         }
+                        listFileSizes();
+
                     }
-                    
+
 
                 }
                 while (true);
@@ -1505,6 +1507,36 @@ namespace VSCaptureDrgVent
                 Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
             }
 
+
+        }
+
+        public void listFileSizes()
+        {
+            try
+            {
+
+                DirectoryInfo directory = new DirectoryInfo(m_sOutFolderPath);
+                FileInfo[] files = directory.GetFiles("*.*");
+
+                var query = from file in files
+                            select file.Name.PadRight(50).Substring(0, 50) + " - " + (file.Length/1000).ToString() + " kB";
+
+
+                int i = 5; // start at 5 to remove the following caption
+
+                Console.WriteLine("\n\n\n\nFiles in output folder:");
+
+                foreach (string str in query)
+                {
+                    Console.WriteLine(str);
+                    i++;
+                }
+                Console.SetCursorPosition(0, Console.CursorTop - i);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public void StopTransfer()
