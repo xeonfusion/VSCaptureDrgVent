@@ -140,7 +140,7 @@ namespace VSCaptureDrgVent
 
 
                 Console.WriteLine();
-                Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in folder: {0}", sStartTime);
+                Console.WriteLine("Data will be written to CSV file DrgVentExportData.csv in folder:\n{0}", sStartTime);
 
                 _serialPort.RequestICC();
                 //_serialPort.RequestDevID();

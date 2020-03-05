@@ -347,6 +347,7 @@ namespace VSCaptureDrgVent
                 EnableDataStream5to8();
                 EnableDataStream9to12();
             }
+            m_realtimestart = true;
         }
 
         public void DisableDataStreams()
@@ -490,6 +491,7 @@ namespace VSCaptureDrgVent
             if(m_RealTimeByteList.Count()>2 && m_nWaveformSet!=0)
             {
                 byte[] RealTimeByteArray = m_RealTimeByteList.ToArray();
+                int bytesSuccessfullyRead = 0;
                 
                 for (int i = 0; i < RealTimeByteArray.Length; i++)
                 {
@@ -523,15 +525,23 @@ namespace VSCaptureDrgVent
                                 i = j;
                             }
                         }
+
                         CreateDataStreamList(ref RTdata);
-                        if(RTdata.rtdatavalues.Count() !=0) m_RealTimeDataList.Add(RTdata);
+                        if (RTdata.rtdatavalues.Count() == RTdata.datastreamlist.Count())
+                        {
+                            // This checks if the RTdata is complete. If not, these bytes will be 
+                            // caried over to the next iteration.
+                            m_RealTimeDataList.Add(RTdata);
+                            bytesSuccessfullyRead = i;
+                        }
                         
                     }
 
                 }
                 ReadRealTimeDataList();
+                m_RealTimeByteList.RemoveRange(0, bytesSuccessfullyRead);
             }
-            m_RealTimeByteList.RemoveRange(0, m_RealTimeByteList.Count());
+           
         }
 
         public void CreateDataStreamList(ref RealTimeData RTdata)
@@ -733,8 +743,10 @@ namespace VSCaptureDrgVent
                             DPort.WriteBuffer(DataConstants.poll_request_no_operation);
                             DebugLine("Send: NOP");
                         }
+                        listFileSizes();
+
                     }
-                    
+
 
                 }
                 while (true);
@@ -887,7 +899,7 @@ namespace VSCaptureDrgVent
 
                 if (DPort.BytesToRead == 0)
                 {
-                    ParseRealtimeDataResponse();
+                    if (m_realtimestart == true) ParseRealtimeDataResponse();
 
                     if (FrameList.Count > 0)
                     {
@@ -1120,8 +1132,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer, 2, dataarray, 0, dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 string DataCode;
@@ -1142,7 +1154,7 @@ namespace VSCaptureDrgVent
                     physio_id = Enum.GetName(typeof(DataConstants.MedibusXDeviceSettings), datacodebyte);
                     if (physio_id == null) physio_id = "UnknownID";
                     
-                    Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                    //Console.WriteLine("{0}: {1}", physio_id, DataValue);
                     //Console.WriteLine();
 
                     NumericValResult NumVal = new NumericValResult();
@@ -1172,8 +1184,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer,2,dataarray,0,dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 string DataCode;
@@ -1194,7 +1206,7 @@ namespace VSCaptureDrgVent
                     physio_id = Enum.GetName(enumtype, datacodebyte);
                     if (physio_id == null) physio_id = "UnknownID";
 
-                    Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                    //Console.WriteLine("{0}: {1}", physio_id, DataValue);
                     //Console.WriteLine();
 
                     NumericValResult NumVal = new NumericValResult();
@@ -1222,8 +1234,8 @@ namespace VSCaptureDrgVent
                 Array.Copy(packetbuffer, 2, dataarray, 0, dataarraylen);
                 string response = Encoding.ASCII.GetString(dataarray);
 
-                Console.WriteLine(response);
-                Console.WriteLine();
+                //Console.WriteLine(response);
+                //Console.WriteLine();
 
                 int responselen = response.Length;
                 int textitemlen = 0;
@@ -1249,8 +1261,8 @@ namespace VSCaptureDrgVent
                         physio_id = Enum.GetName(typeof(DataConstants.MedibusXTextMessages), datacodebyte);
                         if (physio_id == null) physio_id = "UnknownID";
 
-                        Console.WriteLine("{0}: {1}", physio_id, DataValue);
-                        Console.WriteLine();
+                        //Console.WriteLine("{0}: {1}", physio_id, DataValue);
+                        //Console.WriteLine();
 
                         NumericValResult NumVal = new NumericValResult();
 
@@ -1279,90 +1291,95 @@ namespace VSCaptureDrgVent
 
         public void CreateFrameListFromByte(byte bvalue)
         {
-            switch (bvalue)
+            // First, test if a byte is realtime or not.
+            if ((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
             {
-                case DataConstants.BOFRESPCHAR:
-                    m_storestartResp = true;
-                    m_storeend = false;
-                    m_bRespList.Add(bvalue);
-                    break;
-                case DataConstants.BOFCOMCHAR:
-                    m_storestartCom = true;
-                    m_storeend = false;
-                    m_bComList.Add(bvalue);
-                    break;
-                case DataConstants.EOFCHAR:
-                    // If both m_storestartResp and m_storestartCom are true, the Command (com) is embedded.
-                    // In this case EOF refers to Com.
-                    if (m_storestartCom == true)
-                    {
-                        if (m_storestartResp == true) DebugLine("Embedded command");
-                        m_bList = m_bComList;
-                        m_storestartCom = false;
-                    }
-                    else if (m_storestartResp == true)
-                    {
-                        m_bList = m_bRespList;
-                        m_storestartResp = false;
-                    }
-                    m_storeend = true;
-                    break;
-                default:
-                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed.
-                    if((DataConstants.RT_BYTE & bvalue) == DataConstants.RT_BYTE)
-                    {
-                        //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
-                        m_RealTimeByteList.Add(bvalue);
-                    }
-                    else if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
-                    else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
-                    break;
+                //Realtime data is distinguished from slow data in that the most significant bit (realtime data flag) is set
+                m_RealTimeByteList.Add(bvalue);
             }
-
-            if(m_storeend == true)
+            // If not, the byte is slow data.
+            else
             {
-                int framelen = m_bList.Count();
-                if (framelen != 0)
+                switch (bvalue)
                 {
-                    byte[] bArray = new byte[framelen];
-                    bArray = m_bList.ToArray();
-
-                    //serial data without checksum byte
-                    int userdataframelen = (framelen - 2);
-                    byte[] userdataArray = new byte[userdataframelen];
-
-                    //Get user data without checksum
-                    Array.Copy(bArray, 0, userdataArray, 0, userdataframelen);
-
-                    //Read checksum
-                    //byte checksumbyte = bArray[framelen - 1];
-                    byte[] checksumarray = new byte[2];
-                    Array.Copy(bArray, framelen-2, checksumarray, 0, 2);
-                    string checksumstr = Encoding.ASCII.GetString(checksumarray);
-
-                    //Calculate checksum
-                    Crc crccheck = new Crc();
-                    byte checksumcomputed = crccheck.ComputeChecksum(userdataArray);
-                    byte[] checksumcomputedarray = { checksumcomputed };
-                    string checksumcomputedstr = BitConverter.ToString(checksumcomputedarray);
-
-                    if (checksumcomputedstr == checksumstr)
-                    {
-                        FrameList.Add(userdataArray);
-                        //Console.WriteLine("Crc OK");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Checksum Error");
-                        DebugLine("Checksum Error");
-                        NAKResponse();
-                    }
-
-                    m_bList.RemoveRange(0, m_bList.Count);
-                    m_storeend = false;
-
+                    case DataConstants.BOFRESPCHAR:
+                        m_storestartResp = true;
+                        m_storeend = false;
+                        m_bRespList.Add(bvalue);
+                        break;
+                    case DataConstants.BOFCOMCHAR:
+                        m_storestartCom = true;
+                        m_storeend = false;
+                        m_bComList.Add(bvalue);
+                        break;
+                    case DataConstants.EOFCHAR:
+                        // If both m_storestartResp and m_storestartCom are true, the Command (com) is embedded.
+                        // In this case EOF refers to Com.
+                        if (m_storestartCom == true)
+                        {
+                            if (m_storestartResp == true) DebugLine("Embedded command");
+                            m_bList = m_bComList;
+                            m_storestartCom = false;
+                        }
+                        else if (m_storestartResp == true)
+                        {
+                            m_bList = m_bRespList;
+                            m_storestartResp = false;
+                        }
+                        m_storeend = true;
+                        break;
+                    default:
+                    // Other bytes should be added to either the realtime-byte list or the com-list or the resp-list to be parsed.
+                        if (m_storestartCom == true && m_storeend == false) m_bComList.Add(bvalue);
+                        else if (m_storestartResp == true && m_storeend == false) m_bRespList.Add(bvalue);
+                        break;
                 }
 
+                if (m_storeend == true)
+                {
+                    int framelen = m_bList.Count();
+                    if (framelen != 0)
+                    {
+                        byte[] bArray = new byte[framelen];
+                        bArray = m_bList.ToArray();
+
+                        //serial data without checksum byte
+                        int userdataframelen = (framelen - 2);
+                        byte[] userdataArray = new byte[userdataframelen];
+
+                        //Get user data without checksum
+                        Array.Copy(bArray, 0, userdataArray, 0, userdataframelen);
+
+                        //Read checksum
+                        //byte checksumbyte = bArray[framelen - 1];
+                        byte[] checksumarray = new byte[2];
+                        Array.Copy(bArray, framelen - 2, checksumarray, 0, 2);
+                        string checksumstr = Encoding.ASCII.GetString(checksumarray);
+
+                        //Calculate checksum
+                        Crc crccheck = new Crc();
+                        byte checksumcomputed = crccheck.ComputeChecksum(userdataArray);
+                        byte[] checksumcomputedarray = { checksumcomputed };
+                        string checksumcomputedstr = BitConverter.ToString(checksumcomputedarray);
+
+                        if (checksumcomputedstr == checksumstr)
+                        {
+                            FrameList.Add(userdataArray);
+                            //Console.WriteLine("Crc OK");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Checksum Error");
+                            DebugLine("Checksum Error");
+                            NAKResponse();
+                        }
+
+                        m_bList.RemoveRange(0, m_bList.Count);
+                        m_storeend = false;
+
+                    }
+
+                }
             }
         }
 
@@ -1490,6 +1507,36 @@ namespace VSCaptureDrgVent
                 Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
             }
 
+
+        }
+
+        public void listFileSizes()
+        {
+            try
+            {
+
+                DirectoryInfo directory = new DirectoryInfo(m_sOutFolderPath);
+                FileInfo[] files = directory.GetFiles("*.*");
+
+                var query = from file in files
+                            select file.Name.PadRight(50).Substring(0, 50) + " - " + (file.Length/1000).ToString() + " kB";
+
+
+                int i = 5; // start at 5 to remove the following caption
+
+                Console.WriteLine("\n\n\n\nFiles in output folder:");
+
+                foreach (string str in query)
+                {
+                    Console.WriteLine(str);
+                    i++;
+                }
+                Console.SetCursorPosition(0, Console.CursorTop - i);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public void StopTransfer()
