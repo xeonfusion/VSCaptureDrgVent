@@ -526,10 +526,11 @@ namespace VSCaptureDrgVent
                             }
                         }
                         CreateDataStreamList(ref RTdata);
-                        if (RTdata.rtdatavalues.Count() != 0)
+                        //if (RTdata.rtdatavalues.Count() != 0)
+                        if (RTdata.rtdatavalues.Count() == RTdata.datastreamlist.Count())
                         {
                             m_RealTimeDataList.Add(RTdata);
-                            bytesSuccessfullyRead = i+1;
+                            bytesSuccessfullyRead = i + 1;
                         }
                     }
 
