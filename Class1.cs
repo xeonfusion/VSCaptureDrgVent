@@ -532,7 +532,7 @@ namespace VSCaptureDrgVent
                             // This checks if the RTdata is complete. If not, these bytes will be 
                             // caried over to the next iteration.
                             m_RealTimeDataList.Add(RTdata);
-                            bytesSuccessfullyRead = i;
+                            bytesSuccessfullyRead = i + 1;
                         }
                         
                     }
