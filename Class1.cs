@@ -1459,25 +1459,25 @@ namespace VSCaptureDrgVent
         {
             if (m_NumericValList.Count != 0)
             {
-                WriteNumericHeadersList(datatype);
+                //WriteNumericHeadersList(datatype);
                 string filename = String.Format("DrgVent{0}DataExport.csv", datatype);
 
                 string pathcsv = Path.Combine(m_sOutFolderPath, filename);
 
-                m_strbuildvalues.Append(m_NumericValList.ElementAt(0).Timestamp);
-                m_strbuildvalues.Append(',');
+                //m_strbuildvalues.Append(m_NumericValList.ElementAt(0).Timestamp);
+                //m_strbuildvalues.Append(',');
 
 
                 foreach (NumericValResult NumValResult in m_NumericValList)
                 {
-                    m_strbuildvalues.Append(NumValResult.Value);
+                    m_strbuildvalues.Append(NumValResult.Timestamp);
                     m_strbuildvalues.Append(',');
+                    m_strbuildvalues.Append(NumValResult.PhysioID);
+                    m_strbuildvalues.Append(',');
+                    m_strbuildvalues.Append(NumValResult.Value);
+                    m_strbuildvalues.AppendLine();
 
                 }
-
-                m_strbuildvalues.Remove(m_strbuildvalues.Length - 1, 1);
-                m_strbuildvalues.Replace(",,", ",");
-                m_strbuildvalues.AppendLine();
 
                 ExportNumValListToCSVFile(pathcsv, m_strbuildvalues);
                 m_strbuildvalues.Clear();
