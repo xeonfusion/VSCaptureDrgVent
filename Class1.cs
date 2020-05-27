@@ -942,7 +942,7 @@ namespace VSCaptureDrgVent
 
             string responsetype = headerdataresponse.Substring(0, 2);
 
-            m_strTimestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+            m_strTimestamp = DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss.fff");
 
             switch (responsetype)
             {
