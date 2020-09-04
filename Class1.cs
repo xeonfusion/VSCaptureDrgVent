@@ -942,7 +942,7 @@ namespace VSCaptureDrgVent
 
             string responsetype = headerdataresponse.Substring(0, 2);
 
-            m_strTimestamp = DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss.fff");
+            m_strTimestamp = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss.fff");
 
             switch (responsetype)
             {
@@ -1065,7 +1065,7 @@ namespace VSCaptureDrgVent
 
         public void DebugLine(string msg)
         {
-            Debug.WriteLine(DateTime.Now.ToString("hh:mm:ss.fff") + " - " + msg);
+            Debug.WriteLine(DateTime.Now.ToString("HH:mm:ss.fff") + " - " + msg);
         }
 
         public void CommandEchoResponse(byte[] commandbuffer)
