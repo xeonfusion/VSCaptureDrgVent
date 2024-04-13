@@ -1,6 +1,6 @@
 ﻿/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
- * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
+ * Copyright (C) 2017-24 John George K., xeonfusion@users.sourceforge.net
 
     VitalSignsCaptureDraegerVent is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +19,7 @@ using System;
 
 namespace VSCaptureDrgVent
 {
-    static class DataConstants
+    public static class DataConstants
     {
 		/*
          Request current Alarms (Codepage 3) 23H

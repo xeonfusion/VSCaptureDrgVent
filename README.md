@@ -1,5 +1,5 @@
 # VSCaptureDrgVent
-VSCapture module to capture numeric (Settings, Measured Data and Messages) and real time data from Draeger (Medibus.X protocol) ventilators. Requires C#.NET (Visual Studio) or Xamarin Mono to compile.
+VSCapture module to capture numeric (Settings, Measured Data and Messages) and real time data from Draeger (Medibus.X protocol) ventilators. Requires C# .NET8 (Visual Studio 2022) to compile.
 
 ## Note on realtime data
 When numeric and realtime data are captured simultaneously, the exact timing of the realtime data may get temporarily offset, while the numeric data is being read. No dataloss should occur. 

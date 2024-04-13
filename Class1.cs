@@ -1,6 +1,6 @@
 ﻿/*
  * This file is part of VitalSignsCaptureDraegerVent v1.003.
- * Copyright (C) 2017-20 John George K., xeonfusion@users.sourceforge.net
+ * Copyright (C) 2017-24 John George K., xeonfusion@users.sourceforge.net
 
     VitalSignsCaptureDraegerVent is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -28,6 +28,12 @@ using System.Threading;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
+using System.Net;
+using System.Text.Json;
 
 namespace VSCaptureDrgVent
 {
@@ -83,6 +89,17 @@ namespace VSCaptureDrgVent
         public int m_nWaveformSet=0;
         public bool m_realtimestart = false;
         public bool m_MEDIBUSstart = false;
+
+        public string m_DeviceID;
+        public string m_jsonposturl;
+        public int m_dataexportset = 1;
+
+        public string m_MQTTUrl;
+        public string m_MQTTtopic;
+        public string m_MQTTuser;
+        public string m_MQTTpassw;
+        public string m_MQTTclientId = Guid.NewGuid().ToString();
+
 
 
         public class NumericValResult
@@ -651,6 +668,7 @@ namespace VSCaptureDrgVent
             }
             
             m_RealTimeDataList.RemoveRange(0, RTdatacount);
+
             SaveWaveValues();
         }
         
@@ -1102,7 +1120,10 @@ namespace VSCaptureDrgVent
         public void ParseDataResponseMeasuredCP1(byte[] packetbuffer)
         {
             ParseDataResponseMeasured(packetbuffer, typeof(DataConstants.MedibusXMeasurementCP1));
-            SaveNumericValueListRows("MedibusXMeasuredCP1");
+            if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXMeasuredCP1");
+            if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXMeasuredCP1");
+
+            if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXMeasuredCP1");
 
 
         }
@@ -1110,8 +1131,11 @@ namespace VSCaptureDrgVent
         public void ParseDataResponseMeasuredCP2(byte[] packetbuffer)
         {
             ParseDataResponseMeasured(packetbuffer, typeof(DataConstants.MedibusXMeasurementCP2));
-            SaveNumericValueListRows("MedibusXMeasuredCP2");
+            if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXMeasuredCP2");
+            if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXMeasuredCP2");
 
+            if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXMeasuredCP2");
+            
 
         }
 
@@ -1160,7 +1184,12 @@ namespace VSCaptureDrgVent
 
                 }
 
-                SaveNumericValueListRows("MedibusXDeviceSettings");
+                if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXDeviceSettings");
+                if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXDeviceSettings");
+
+                if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXDeviceSettings");
+
+                //SaveNumericValueListRows("MedibusXDeviceSettings");
             }
 
  
@@ -1269,7 +1298,12 @@ namespace VSCaptureDrgVent
 
                 }
 
-                SaveNumericValueListRows("MedibusXTextMessages");
+                if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXTextMessages");
+                if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXTextMessages");
+
+                if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXTextMessages");
+
+                //SaveNumericValueListRows("MedibusXTextMessages");
             }
 
 
@@ -1535,6 +1569,131 @@ namespace VSCaptureDrgVent
             }
             // error occured, return false. 
             return false;
+        }
+
+        public void ExportNumValListToJSON(string datatype)
+        {
+            string serializedJSON = JsonSerializer.Serialize(m_NumericValList, new JsonSerializerOptions { IncludeFields = true });
+
+            try
+            {
+                // Open file for reading. 
+                //using (StreamWriter wrStream = new StreamWriter(pathjson, true, Encoding.UTF8))
+                //{
+                // wrStream.Write(serializedJSON);
+                //  wrStream.Close();
+                //}
+
+                Task.Run(() => PostJSONDataToServer(serializedJSON));
+
+            }
+
+            catch (Exception _Exception)
+            {
+                // Error. 
+                Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
+            }
+        }
+
+        public async Task PostJSONDataToServer(string postData)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+                var data = new StringContent(postData, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(m_jsonposturl, data);
+                response.EnsureSuccessStatusCode();
+
+                string result = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine(result);
+            }
+        }
+
+        public void ExportNumValListToMQTT(string datatype)
+        {
+            string serializedJSON = JsonSerializer.Serialize(m_NumericValList, new JsonSerializerOptions { IncludeFields = true });
+
+            m_NumericValList.RemoveRange(0, m_NumericValList.Count);
+
+            CancellationTokenSource source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+
+            var mqttFactory = new MqttFactory();
+
+            var mqttClient = mqttFactory.CreateMqttClient();
+            var logger = mqttFactory.DefaultLogger;
+
+            var managedClient = new ManagedMqttClient(mqttClient, logger);
+
+            var topic = m_MQTTtopic + string.Format("/{0}", datatype);
+
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    await ConnectMQTTAsync(managedClient, token, m_MQTTUrl, m_MQTTclientId, m_MQTTuser, m_MQTTpassw);
+                    
+                    await PublishMQTTAsync(managedClient, token, topic, serializedJSON);
+                    await managedClient.StopAsync();
+
+                });
+
+                
+            }
+
+            catch (Exception _Exception)
+            {
+                // Error. 
+                Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
+            }
+
+        }
+
+        public static async Task ConnectMQTTAsync(ManagedMqttClient mqttClient, CancellationToken token, string mqtturl, string clientId, string mqttuser, string mqttpassw)
+        {
+            bool mqttSecure = true;
+
+            var messageBuilder = new MqttClientOptionsBuilder()
+            .WithClientId(clientId)
+            .WithCredentials(mqttuser, mqttpassw)
+            .WithCleanSession()
+            .WithWebSocketServer((MqttClientWebSocketOptionsBuilder b) =>
+            {
+                b.WithUri(mqtturl);
+            });
+
+            var tlsOptions = new MqttClientTlsOptionsBuilder()
+               .WithSslProtocols(System.Security.Authentication.SslProtocols.Tls12)
+               .Build();
+
+            var options = mqttSecure
+            ? messageBuilder
+            .WithTlsOptions(tlsOptions)
+                .Build()
+            : messageBuilder
+                .Build();
+
+            var managedOptions = new ManagedMqttClientOptionsBuilder()
+              .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
+              .WithClientOptions(options)
+              .Build();
+
+            await mqttClient.StartAsync(managedOptions);
+
+        }
+
+        public static async Task PublishMQTTAsync(ManagedMqttClient mqttClient, CancellationToken token, string topic, string payload, bool retainFlag = true, int qos = 1)
+        {
+            await mqttClient.EnqueueAsync(topic, payload, (MQTTnet.Protocol.MqttQualityOfServiceLevel)qos, retainFlag);
+
+            Console.WriteLine("The managed MQTT client is connected.");
+
+            // Wait until the queue is fully processed.
+            SpinWait.SpinUntil(() => mqttClient.PendingApplicationMessagesCount == 0, 10000);
+
         }
 
         public bool OSIsUnix()
