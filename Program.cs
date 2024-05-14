@@ -118,8 +118,8 @@ namespace VSCaptureDrgVent
             }
 
             int[] setarray = { 5, 10, 60, 300, 0 };
-            short nIntervalset = 2;
-            int nInterval = 10;
+            short nIntervalset = 1;
+            int nInterval = 5;
             if (sIntervalset != "") nIntervalset = Convert.ToInt16(sIntervalset);
             if (nIntervalset > 0 && nIntervalset < 6) nInterval = setarray[nIntervalset - 1];
 
@@ -135,8 +135,9 @@ namespace VSCaptureDrgVent
                 Console.WriteLine("1. Export as CSV files");
                 Console.WriteLine("2. Export as CSV files and JSON to URL");
                 Console.WriteLine("3. Export as MQTT to URL");
+                Console.WriteLine("4. Export as JSON file");
                 Console.WriteLine();
-                Console.Write("Choose data export option (1-3):");
+                Console.Write("Choose data export option (1-4):");
 
                 sDataExportset = Console.ReadLine();
 
@@ -244,7 +245,7 @@ namespace VSCaptureDrgVent
             _serialPort.m_MQTTuser = MQTTuser;
             _serialPort.m_MQTTpassw = MQTTpassw;
 
-            if (nDataExportset > 0 && nDataExportset < 4) _serialPort.m_dataexportset = nDataExportset;
+            if (nDataExportset > 0 && nDataExportset < 5) _serialPort.m_dataexportset = nDataExportset;
 
 
             if (parser.Arguments.ContainsKey("waveset"))

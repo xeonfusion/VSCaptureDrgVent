@@ -620,7 +620,7 @@ namespace VSCaptureDrgVent
                     WaveValResult WavValResult = new WaveValResult();
 
                     WavValResult.Datastreamindex = datastreamindex.ToString();
-                    WavValResult.Timestamp = dtime.ToString("G", DateTimeFormatInfo.InvariantInfo);
+                    WavValResult.Timestamp = dtime.ToString("dd-MM-yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
 
                     if (datastreamindex < m_RealTimeReqWaveList.Count())
                     {
@@ -981,7 +981,7 @@ namespace VSCaptureDrgVent
 
             string responsetype = headerdataresponse.Substring(0, 2);
 
-            m_strTimestamp = DateTime.Now.ToString();
+            m_strTimestamp = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss.fff", CultureInfo.InvariantCulture);
 
             m_readingResponse = true;
 
@@ -1120,23 +1120,13 @@ namespace VSCaptureDrgVent
         public void ParseDataResponseMeasuredCP1(byte[] packetbuffer)
         {
             ParseDataResponseMeasured(packetbuffer, typeof(DataConstants.MedibusXMeasurementCP1));
-            if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXMeasuredCP1");
-            if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXMeasuredCP1");
-
-            if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXMeasuredCP1");
-
-
+            SaveNumericValueListRows("MedibusXMeasuredCP1");
         }
 
         public void ParseDataResponseMeasuredCP2(byte[] packetbuffer)
         {
             ParseDataResponseMeasured(packetbuffer, typeof(DataConstants.MedibusXMeasurementCP2));
-            if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXMeasuredCP2");
-            if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXMeasuredCP2");
-
-            if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXMeasuredCP2");
-            
-
+            SaveNumericValueListRows("MedibusXMeasuredCP2");
         }
 
         public void ParseDataDeviceSettings(byte[] packetbuffer)
@@ -1184,12 +1174,7 @@ namespace VSCaptureDrgVent
 
                 }
 
-                if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXDeviceSettings");
-                if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXDeviceSettings");
-
-                if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXDeviceSettings");
-
-                //SaveNumericValueListRows("MedibusXDeviceSettings");
+                SaveNumericValueListRows("MedibusXDeviceSettings");
             }
 
  
@@ -1298,12 +1283,7 @@ namespace VSCaptureDrgVent
 
                 }
 
-                if (m_dataexportset == 2) ExportNumValListToJSON("MedibusXTextMessages");
-                if (m_dataexportset == 3) ExportNumValListToMQTT("MedibusXTextMessages");
-
-                if (m_dataexportset != 3) SaveNumericValueListRows("MedibusXTextMessages");
-
-                //SaveNumericValueListRows("MedibusXTextMessages");
+                SaveNumericValueListRows("MedibusXTextMessages");
             }
 
 
@@ -1488,32 +1468,39 @@ namespace VSCaptureDrgVent
 
         public void SaveNumericValueListRows(string datatype)
         {
-            if (m_NumericValList.Count != 0)
+            if (m_dataexportset == 2) ExportNumValListToJSON(datatype);
+            if (m_dataexportset == 3) ExportNumValListToMQTT(datatype);
+            if (m_dataexportset == 4) ExportNumValListToJSONFile(datatype);
+            if (m_dataexportset != 3 && m_dataexportset != 4)
             {
-                WriteNumericHeadersList(datatype);
-                string filename = String.Format("DrgVent{0}DataExport.csv", datatype);
-
-                string pathcsv = Path.Combine(Directory.GetCurrentDirectory(), filename);
-
-                m_strbuildvalues.Append(m_NumericValList.ElementAt(0).Timestamp);
-                m_strbuildvalues.Append(',');
-
-
-                foreach (NumericValResult NumValResult in m_NumericValList)
+                if (m_NumericValList.Count != 0)
                 {
-                    m_strbuildvalues.Append(NumValResult.Value);
+                    WriteNumericHeadersList(datatype);
+                    string filename = String.Format("DrgVent{0}DataExport.csv", datatype);
+
+                    string pathcsv = Path.Combine(Directory.GetCurrentDirectory(), filename);
+
+                    m_strbuildvalues.Append(m_NumericValList.ElementAt(0).Timestamp);
                     m_strbuildvalues.Append(',');
 
+
+                    foreach (NumericValResult NumValResult in m_NumericValList)
+                    {
+                        m_strbuildvalues.Append(NumValResult.Value);
+                        m_strbuildvalues.Append(',');
+
+                    }
+
+                    m_strbuildvalues.Remove(m_strbuildvalues.Length - 1, 1);
+                    m_strbuildvalues.Replace(",,", ",");
+                    m_strbuildvalues.AppendLine();
+
+                    ExportNumValListToCSVFile(pathcsv, m_strbuildvalues);
+                    m_strbuildvalues.Clear();
+                    m_NumericValList.RemoveRange(0, m_NumericValList.Count);
                 }
-
-                m_strbuildvalues.Remove(m_strbuildvalues.Length - 1, 1);
-                m_strbuildvalues.Replace(",,", ",");
-                m_strbuildvalues.AppendLine();
-
-                ExportNumValListToCSVFile(pathcsv, m_strbuildvalues);
-                m_strbuildvalues.Clear();
-                m_NumericValList.RemoveRange(0, m_NumericValList.Count);
             }
+
         }
 
         public void ExportNumValListToCSVFile(string _FileName, StringBuilder strbuildNumVal)
@@ -1595,6 +1582,34 @@ namespace VSCaptureDrgVent
             }
         }
 
+        public void ExportNumValListToJSONFile(string datatype)
+        {
+            string serializedJSON = JsonSerializer.Serialize(m_NumericValList, new JsonSerializerOptions { IncludeFields = true });
+
+            m_NumericValList.RemoveRange(0, m_NumericValList.Count);
+
+            string filename = String.Format("DataExportVSC.json");
+
+            string pathjson = Path.Combine(Directory.GetCurrentDirectory(), filename);
+
+            try
+            {
+                // Open file for reading. 
+                using (StreamWriter wrStream = new StreamWriter(pathjson, true, Encoding.UTF8))
+                {
+                    wrStream.Write(serializedJSON);
+
+                    wrStream.Close();
+                }
+            }
+
+            catch (Exception _Exception)
+            {
+                // Error. 
+                Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
+            }
+        }
+
         public async Task PostJSONDataToServer(string postData)
         {
             using (HttpClient client = new HttpClient())
@@ -1621,11 +1636,8 @@ namespace VSCaptureDrgVent
             CancellationTokenSource source = new CancellationTokenSource();
             CancellationToken token = source.Token;
 
-            var mqttFactory = new MqttFactory();
-
-            var mqttClient = mqttFactory.CreateMqttClient();
-            var logger = mqttFactory.DefaultLogger;
-
+            var mqttClient = new MqttFactory().CreateMqttClient();
+            var logger = new MqttFactory().DefaultLogger;
             var managedClient = new ManagedMqttClient(mqttClient, logger);
 
             var topic = m_MQTTtopic + string.Format("/{0}", datatype);
@@ -1634,21 +1646,47 @@ namespace VSCaptureDrgVent
             {
                 var task = Task.Run(async () =>
                 {
+                    var connected = GetConnectedTask(managedClient);
                     await ConnectMQTTAsync(managedClient, token, m_MQTTUrl, m_MQTTclientId, m_MQTTuser, m_MQTTpassw);
-                    
-                    await PublishMQTTAsync(managedClient, token, topic, serializedJSON);
-                    await managedClient.StopAsync();
+                    await connected;
 
+                    //await PublishMQTTAsync(managedClient, token, topic, serializedJSON);
+                    //await managedClient.StopAsync();
                 });
 
-                
+                task.ContinueWith(antecedent =>
+                {
+                    if (antecedent.Status == TaskStatus.RanToCompletion)
+                    {
+                        Task.Run(async () =>
+                        {
+                            await PublishMQTTAsync(managedClient, token, topic, serializedJSON);
+                            await managedClient.StopAsync();
+                        });
+                    }
+                });
+
             }
 
             catch (Exception _Exception)
             {
-                // Error. 
                 Console.WriteLine("Exception caught in process: {0}", _Exception.ToString());
             }
+
+        }
+
+        Task GetConnectedTask(ManagedMqttClient managedClient)
+        {
+            TaskCompletionSource<bool> connected = new TaskCompletionSource<bool>();
+            managedClient.ConnectedAsync += (MqttClientConnectedEventArgs arg) =>
+            {
+
+                connected.SetResult(true);
+                //Console.WriteLine("MQTT Client connected");
+                return Task.CompletedTask;
+            };
+
+            return connected.Task;
 
         }
 
@@ -1677,7 +1715,7 @@ namespace VSCaptureDrgVent
                 .Build();
 
             var managedOptions = new ManagedMqttClientOptionsBuilder()
-              .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
+              .WithAutoReconnectDelay(TimeSpan.FromSeconds(1))
               .WithClientOptions(options)
               .Build();
 
@@ -1688,11 +1726,11 @@ namespace VSCaptureDrgVent
         public static async Task PublishMQTTAsync(ManagedMqttClient mqttClient, CancellationToken token, string topic, string payload, bool retainFlag = true, int qos = 1)
         {
             await mqttClient.EnqueueAsync(topic, payload, (MQTTnet.Protocol.MqttQualityOfServiceLevel)qos, retainFlag);
-
-            Console.WriteLine("The managed MQTT client is connected.");
+            //Console.WriteLine("The managed MQTT client is connected, publishing data.");
 
             // Wait until the queue is fully processed.
-            SpinWait.SpinUntil(() => mqttClient.PendingApplicationMessagesCount == 0, 10000);
+            SpinWait.SpinUntil(() => mqttClient.PendingApplicationMessagesCount == 0, 5000);
+            //Console.WriteLine($"Pending messages = {mqttClient.PendingApplicationMessagesCount}");
 
         }
 
